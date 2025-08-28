@@ -1,0 +1,16 @@
+FROM node:20-alpine
+
+WORKDIR /usr/src/app
+
+COPY package*.json .env.dev ./
+RUN npm i --production
+
+COPY . .
+
+ENV NODE_ENV=dev
+
+RUN npm run build
+
+CMD ["node", "dist/main.js"]
+
+EXPOSE 3001
