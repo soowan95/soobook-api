@@ -1,9 +1,21 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const reflector: Reflector = new Reflector();
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    transform: true,
+  }));
+
+  app.useGlobalInterceptors(
+    new ResponseInterceptor(reflector),
+  );
 
   if (process.env.NODE_ENV === 'dev') {
     const config = new DocumentBuilder()

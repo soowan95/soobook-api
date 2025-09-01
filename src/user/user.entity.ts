@@ -1,8 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, BeforeInsert } from 'typeorm';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn({ type: 'varchar', length: 255 })
   email: string;
 
   @Column('text')
@@ -14,6 +14,13 @@ export class User {
   @Column({ length: 10 })
   name: string;
 
-  @Column({ length: 10 })
+  @Column({ length: 10, nullable: true })
   nickname: string;
+
+  @BeforeInsert()
+  setDaultNickName() {
+    if (!this.nickname) {
+      this.nickname = this.name;
+    }
+  }
 }
