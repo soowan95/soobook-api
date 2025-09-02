@@ -1,14 +1,17 @@
-import { Entity, Column, PrimaryColumn, BeforeInsert } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert } from 'typeorm';
 
 @Entity()
 export class User {
-  @PrimaryColumn({ type: 'varchar', length: 255 })
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
   email: string;
 
-  @Column('text')
+  @Column()
   password: string;
 
-  @Column('text')
+  @Column({ name: 'phone_no', length: 20 })
   phoneNo: string;
 
   @Column({ length: 10 })
