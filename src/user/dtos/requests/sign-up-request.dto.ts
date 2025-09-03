@@ -17,7 +17,7 @@ export class SignUpRequestDto {
 
   @ApiProperty({
     description: '비밀번호',
-    example: 'qwer1234',
+    example: 'Qwer1234!',
   })
   @IsStrongPassword(
     {},

@@ -1,5 +1,3 @@
-version: "1.0-SNAPSHOT"
-
 services:
   mariadb-dev:
     image: mariadb:10.6
