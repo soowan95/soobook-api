@@ -3,7 +3,7 @@
 commit_msg_file=$1
 commit_msg=$(cat "$commit_msg_file")
 
-conventional_regex="^(feat|fix|style|chore|docs|refactor|test):.*$"
+conventional_regex="^(feat|fix|style|chore|docs|refactor|test)(\(.+\))?: .+$"
 if ! echo "$commit_msg" | grep -Eq "$conventional_regex"; then
         echo "Error: The starting of the commit msg must follow the Conventional Commits standard."
         echo "feat     - new feature"
