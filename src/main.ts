@@ -4,7 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import * as dotenv from 'dotenv';
-import { JwtGuard } from './common/guards/jwt.guard';
+import { JwtAccessGuard } from './common/guards/jwt-access.guard';
+import {JwtRefreshGuard} from "./common/guards/jwt-refresh.guard";
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || `dev`}` });
 
@@ -18,7 +19,8 @@ async function bootstrap() {
   }));
 
   app.useGlobalGuards(
-    new JwtGuard(reflector)
+    new JwtAccessGuard(reflector),
+    new JwtRefreshGuard(reflector),
   )
 
   app.useGlobalInterceptors(

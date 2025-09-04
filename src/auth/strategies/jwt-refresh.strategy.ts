@@ -4,11 +4,11 @@ import * as dotenv from 'dotenv';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || `dev`}` });
 
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_SECRET,
+      secretOrKey: process.env.JWT_REFRESH_SECRET,
     });
   }
 

@@ -15,26 +15,42 @@ export class AuthService {
     private readonly userService: UserService,
   ) {}
 
-  async signIn(email: string, password: string): Promise<{ user: User; token: string }> {
-    const loginUser = await this.userService.findByEmailOrThrow(email)
-      .catch(_ => {
+  async signIn(email: string, password: string): Promise<{ user: User, accessToken: string, refreshToken: string}> {
+    const loginUser = await this.userService
+      .findByEmailOrThrow(email)
+      .catch((_) => {
         throw new BadRequestException('등록되지 않은 사용자입니다.');
       });
 
-    const isValid = await this.argon2Serivce.verifyPassword(loginUser.password, password);
-    
-    if (!isValid)
-      throw new BadRequestException('로그인 정보를 확인해주세요.');
+    const isValid = await this.argon2Serivce.verifyPassword(
+      loginUser.password,
+      password,
+    );
 
-    return { user: loginUser, token: await this.getToken(loginUser)}
+    if (!isValid) throw new BadRequestException('로그인 정보를 확인해주세요.');
+
+    return { user: loginUser, accessToken: await this.generateATK(loginUser), refreshToken: await this.generateRTK(loginUser)}
   }
 
-  private async getToken(user: User): Promise<string> {
+  async generateATK(user: User) {
     const { password, ...payload } = user;
 
     return await this.jwtService.signAsync(payload, {
-      secret: process.env.JWT_SECRET,
-      expiresIn: process.env.JWT_EXPIRES,
+      secret: process.env.JWT_ACCESS_SECRET,
+      expiresIn: process.env.JWT_ACCESS_EXPIRES,
     });
+  }
+
+  async generateRTK(user: User) {
+    const { password, ...payload } = user;
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: process.env.JWT_REFRESH_EXPIRES,
+    });
+
+    await this.userService.updateRefreshToken(user.id, refreshToken);
+
+    return refreshToken;
   }
 }

@@ -34,6 +34,9 @@ export class User {
   })
   role: UserRole;
 
+  @Column({ name: 'refresh_token', nullable: true })
+  refreshToken: string;
+
   @BeforeInsert()
   setDaultNickName() {
     if (!this.nickname) {

@@ -7,8 +7,15 @@ export class SignInResponseDto {
     description: '발급된 access 토큰',
   })
   @Expose()
-  @Transform(({ obj }) => obj.token, { toClassOnly: true })
-  token: string;
+  @Transform(({ obj }) => obj.accessToken, { toClassOnly: true })
+  atk: string;
+
+  @ApiProperty({
+    description: '발급된 refresh 토큰',
+  })
+  @Expose()
+  @Transform(({ obj }) => obj.refreshToken, { toClassOnly: true })
+  rtk: string;
 
   @ApiProperty({
     description: '이용자 email',

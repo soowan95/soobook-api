@@ -11,7 +11,7 @@ import { Observable } from 'rxjs';
 import { TokenExpiredError, JsonWebTokenError } from '@nestjs/jwt';
 
 @Injectable()
-export class JwtGuard extends AuthGuard('jwt') {
+export class JwtRefreshGuard extends AuthGuard('jwt-refresh') {
   constructor(private readonly reflector: Reflector) {
     super();
   }
@@ -27,13 +27,13 @@ export class JwtGuard extends AuthGuard('jwt') {
 
   handleRequest(err: any, user: any, info: any) {
     if (info instanceof TokenExpiredError)
-      throw new HttpException('토큰이 만료되었습니다.', 419);
+      throw new HttpException('Refresh 토큰이 만료되었습니다.', 419);
 
     if (info instanceof JsonWebTokenError)
-      throw new UnauthorizedException('유효하지 않은 토큰입니다.');
+      throw new UnauthorizedException('유효하지 않은 refresh 토큰입니다.');
 
     if (err || !user)
-      throw new ForbiddenException('인증에 실패했습니다.');
+      throw new ForbiddenException('Refresh 인증에 실패했습니다.');
 
     return user
   }

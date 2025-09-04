@@ -29,4 +29,15 @@ export class UserService {
     await this.userRepository.save(user);
     return user;
   }
+
+  async updateRefreshToken(id: number, refreshToken: string) {
+    const user = await this.userRepository.findOneBy({
+      id: id,
+    });
+
+    if (!user) return;
+
+    user.refreshToken = await this.argon2Serivce.hashPassword(refreshToken);
+    await this.userRepository.save(user);
+  }
 }
