@@ -1,28 +1,33 @@
 import {ApiProperty} from "@nestjs/swagger";
-import {Transform} from "class-transformer";
+import { Exclude, Expose, Transform } from 'class-transformer';
 
+@Exclude()
 export class SignInResponseDto {
   @ApiProperty({
     description: '발급된 access 토큰',
   })
+  @Expose()
   @Transform(({ obj }) => obj.token, { toClassOnly: true })
   token: string;
 
   @ApiProperty({
     description: '이용자 email',
   })
+  @Expose()
   @Transform(({ obj }) => obj.user.email, { toClassOnly: true })
   email: string;
 
   @ApiProperty({
     description: '이용자 이름',
   })
+  @Expose()
   @Transform(({ obj }) => obj.user.name, { toClassOnly: true })
   name: string;
 
   @ApiProperty({
     description: '이용자 닉네임',
   })
+  @Expose()
   @Transform(({ obj }) => obj.user.nickname, { toClassOnly: true })
   nickname: string;
 }
