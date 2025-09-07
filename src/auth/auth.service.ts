@@ -15,7 +15,10 @@ export class AuthService {
     private readonly userService: UserService,
   ) {}
 
-  async signIn(email: string, password: string): Promise<{ user: User, accessToken: string, refreshToken: string}> {
+  async signIn(
+    email: string,
+    password: string,
+  ): Promise<{ user: User; accessToken: string; refreshToken: string }> {
     const loginUser = await this.userService
       .findByEmailOrThrow(email)
       .catch((_) => {
@@ -29,10 +32,14 @@ export class AuthService {
 
     if (!isValid) throw new BadRequestException('로그인 정보를 확인해주세요.');
 
-    return { user: loginUser, accessToken: await this.generateATK(loginUser), refreshToken: await this.generateRTK(loginUser)}
+    return {
+      user: loginUser,
+      accessToken: await this.generateATK(loginUser),
+      refreshToken: await this.generateRTK(loginUser),
+    };
   }
 
-  async generateATK(user: User) {
+  async generateATK(user: User): Promise<string> {
     const { password, ...payload } = user;
 
     return await this.jwtService.signAsync(payload, {
@@ -41,7 +48,15 @@ export class AuthService {
     });
   }
 
-  async generateRTK(user: User) {
+  async refreshATK(user: User): Promise<string> {
+    const { password, ...payload } = user;
+
+    return await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_ACCESS_SECRET,
+    });
+  }
+
+  async generateRTK(user: User): Promise<string> {
     const { password, ...payload } = user;
 
     const refreshToken = await this.jwtService.signAsync(payload, {

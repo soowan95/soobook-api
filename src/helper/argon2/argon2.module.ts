@@ -1,5 +1,5 @@
-import { Global, Module } from "@nestjs/common";
-import { Argon2Service } from "./argon2.service";
+import { Global, Module } from '@nestjs/common';
+import { Argon2Service } from './argon2.service';
 
 @Global()
 @Module({

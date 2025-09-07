@@ -2,7 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { SignUpRequestDto } from './dtos/requests/sign-up-request.dto';
-import {Argon2Service} from "../helper/argon2/argon2.service";
+import { Argon2Service } from '../helper/argon2/argon2.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -21,7 +22,9 @@ export class UserService {
   }
 
   async signUp(signUpRequestDto: SignUpRequestDto): Promise<User> {
-    signUpRequestDto.password = await this.argon2Serivce.hashPassword(signUpRequestDto.password);
+    signUpRequestDto.password = await this.argon2Serivce.hashPassword(
+      signUpRequestDto.password,
+    );
     const user = this.userRepository.create({
       ...signUpRequestDto,
     });
@@ -31,13 +34,7 @@ export class UserService {
   }
 
   async updateRefreshToken(id: number, refreshToken: string) {
-    const user = await this.userRepository.findOneBy({
-      id: id,
-    });
-
-    if (!user) return;
-
-    user.refreshToken = await this.argon2Serivce.hashPassword(refreshToken);
-    await this.userRepository.save(user);
+    const hashedRTK = await bcrypt.hash(refreshToken, 10);
+    await this.userRepository.update(id, { refreshToken: hashedRTK });
   }
 }

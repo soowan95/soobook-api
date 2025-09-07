@@ -1,27 +1,22 @@
-import { AuthGuard } from '@nestjs/passport'
+import { AuthGuard } from '@nestjs/passport';
 import {
   ExecutionContext,
   ForbiddenException,
   HttpException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
-import { TokenExpiredError, JsonWebTokenError } from '@nestjs/jwt';
+import { JsonWebTokenError, TokenExpiredError } from '@nestjs/jwt';
 
 @Injectable()
 export class JwtRefreshGuard extends AuthGuard('jwt-refresh') {
-  constructor(private readonly reflector: Reflector) {
-    super();
-  }
+  private readonly logger = new Logger(JwtRefreshGuard.name);
 
-  canActivate(context:ExecutionContext):boolean | Promise<boolean> | Observable<boolean> {
-    const isPublic = this.reflector.getAllAndOverride('isPublic', [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-    if (isPublic) return true;
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
     return super.canActivate(context);
   }
 
@@ -32,9 +27,11 @@ export class JwtRefreshGuard extends AuthGuard('jwt-refresh') {
     if (info instanceof JsonWebTokenError)
       throw new UnauthorizedException('유효하지 않은 refresh 토큰입니다.');
 
-    if (err || !user)
+    if (err || !user) {
+      this.logger.error('Refresh 토큰 에러: ', err)
       throw new ForbiddenException('Refresh 인증에 실패했습니다.');
+    }
 
-    return user
+    return user;
   }
 }

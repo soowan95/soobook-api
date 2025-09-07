@@ -4,7 +4,10 @@ import * as dotenv from 'dotenv';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || `dev`}` });
 
-export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwt-access') {
+export class JwtAccessStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-access',
+) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

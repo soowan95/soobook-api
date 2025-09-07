@@ -4,7 +4,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAccessStrategy } from './strategies/jwt-access.strategy';
 import { UserModule } from '../user/user.module';
-import {JwtRefreshStrategy} from "./strategies/jwt-refresh.strategy";
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 
 @Module({
   imports: [UserModule, JwtModule.register({})],

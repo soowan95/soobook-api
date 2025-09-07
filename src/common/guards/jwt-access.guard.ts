@@ -1,4 +1,4 @@
-import { AuthGuard } from '@nestjs/passport'
+import { AuthGuard } from '@nestjs/passport';
 import {
   ExecutionContext,
   ForbiddenException,
@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
-import { TokenExpiredError, JsonWebTokenError } from '@nestjs/jwt';
+import { JsonWebTokenError, TokenExpiredError } from '@nestjs/jwt';
 
 @Injectable()
 export class JwtAccessGuard extends AuthGuard('jwt-access') {
@@ -16,7 +16,9 @@ export class JwtAccessGuard extends AuthGuard('jwt-access') {
     super();
   }
 
-  canActivate(context:ExecutionContext):boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
     const isPublic = this.reflector.getAllAndOverride('isPublic', [
       context.getHandler(),
       context.getClass(),
@@ -35,6 +37,6 @@ export class JwtAccessGuard extends AuthGuard('jwt-access') {
     if (err || !user)
       throw new ForbiddenException('Access 인증에 실패했습니다.');
 
-    return user
+    return user;
   }
 }

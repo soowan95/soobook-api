@@ -1,37 +1,40 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import {LogLevel, ValidationPipe } from '@nestjs/common';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import * as dotenv from 'dotenv';
 import { JwtAccessGuard } from './common/guards/jwt-access.guard';
-import {JwtRefreshGuard} from "./common/guards/jwt-refresh.guard";
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || `dev`}` });
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  let loggerLevel: LogLevel[] = ['error', 'warn'];
+  if (process.env.NODE_ENV === 'dev') {
+    loggerLevel = ['error', 'warn', 'log', 'debug', 'verbose'];
+  }
+
+  const app = await NestFactory.create(AppModule, {
+    logger: loggerLevel,
+  });
   const reflector: Reflector = new Reflector();
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-  }));
-
-  app.useGlobalGuards(
-    new JwtAccessGuard(reflector),
-    new JwtRefreshGuard(reflector),
-  )
-
-  app.useGlobalInterceptors(
-    new ResponseInterceptor(reflector),
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
   );
+
+  app.useGlobalGuards(new JwtAccessGuard(reflector));
+
+  app.useGlobalInterceptors(new ResponseInterceptor(reflector));
 
   app.enableCors({
     origin: process.env.CORS_ORIGIN,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     credentials: true,
-  })
+  });
 
   if (process.env.NODE_ENV === 'dev') {
     const config = new DocumentBuilder()
@@ -45,6 +48,11 @@ async function bootstrap() {
         scheme: 'bearer',
         bearerFormat: 'JWT',
       })
+      .addBearerAuth({
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      }, 'refresh-token')
       .build();
     const documentFactory = () => SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, documentFactory);

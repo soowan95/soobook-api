@@ -1,4 +1,10 @@
-import { Entity, Index, Column, PrimaryGeneratedColumn, BeforeInsert } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 export enum UserRole {
   ADMIN = 'admin',
