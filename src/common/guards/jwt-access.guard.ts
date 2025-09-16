@@ -9,10 +9,14 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { JsonWebTokenError, TokenExpiredError } from '@nestjs/jwt';
+import { AuthService } from '../../modules/auth/auth.service';
 
 @Injectable()
 export class JwtAccessGuard extends AuthGuard('jwt-access') {
-  constructor(private readonly reflector: Reflector) {
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly authService: AuthService,
+  ) {
     super();
   }
 
@@ -36,6 +40,9 @@ export class JwtAccessGuard extends AuthGuard('jwt-access') {
 
     if (err || !user)
       throw new ForbiddenException('Access 인증에 실패했습니다.');
+
+    if (!this.authService.checkRTK(user))
+      throw new ForbiddenException('로그아웃 되었습니다.');
 
     return user;
   }
