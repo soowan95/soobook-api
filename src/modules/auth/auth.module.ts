@@ -4,11 +4,12 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAccessStrategy } from './strategies/jwt-access.strategy';
 import { UserModule } from '../user/user.module';
-import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { refreshTokenProvider } from './refresh-token-provider';
+import { DatabaseModule } from '../../database/database.module';
 
 @Module({
-  imports: [UserModule, JwtModule.register({})],
+  imports: [DatabaseModule, UserModule, JwtModule.register({})],
   controllers: [AuthController],
-  providers: [AuthService, JwtAccessStrategy, JwtRefreshStrategy],
+  providers: [...refreshTokenProvider, AuthService, JwtAccessStrategy],
 })
 export class AuthModule {}

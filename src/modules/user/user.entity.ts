@@ -3,8 +3,10 @@ import {
   Column,
   Entity,
   Index,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { RefreshToken } from '../auth/refresh-token.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -40,8 +42,10 @@ export class User {
   })
   role: UserRole;
 
-  @Column({ name: 'refresh_token', nullable: true })
-  refreshToken: string;
+  @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user, {
+    onDelete: 'CASCADE',
+  })
+  refreshToken: RefreshToken;
 
   @BeforeInsert()
   setDaultNickName() {

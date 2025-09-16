@@ -15,7 +15,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-dev
-    restart: always
+    restart: on-failure
     image: nestjs:dev
     ports:
       - "3001:3001"

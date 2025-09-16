@@ -5,6 +5,7 @@ import {LogLevel, ValidationPipe } from '@nestjs/common';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import * as dotenv from 'dotenv';
 import { JwtAccessGuard } from './common/guards/jwt-access.guard';
+import {AuthService} from "./modules/auth/auth.service";
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || `dev`}` });
 
@@ -18,6 +19,7 @@ async function bootstrap() {
     logger: loggerLevel,
   });
   const reflector: Reflector = new Reflector();
+  const authService: AuthService = app.get(AuthService);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -26,7 +28,7 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalGuards(new JwtAccessGuard(reflector));
+  app.useGlobalGuards(new JwtAccessGuard(reflector, authService));
 
   app.useGlobalInterceptors(new ResponseInterceptor(reflector));
 
@@ -48,11 +50,6 @@ async function bootstrap() {
         scheme: 'bearer',
         bearerFormat: 'JWT',
       })
-      .addBearerAuth({
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-      }, 'refresh-token')
       .build();
     const documentFactory = () => SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, documentFactory);

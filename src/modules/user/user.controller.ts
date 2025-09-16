@@ -3,9 +3,9 @@ import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Post } from '@nestjs/common';
 import { SignUpResponseDto } from './dtos/response/sign-up-response.dto';
 import { SignUpRequestDto } from './dtos/requests/sign-up-request.dto';
-import { ResponseMessage } from '../common/decorators/response-message.decorator';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import { plainToInstance } from 'class-transformer';
-import { Public } from '../common/decorators/public.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('- User')
 @Controller('user')

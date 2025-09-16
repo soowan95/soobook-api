@@ -5,14 +5,14 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Headers, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInRequestDto } from './dtos/requests/sign-in-request.dto';
+import { RefreshRequestDto } from './dtos/requests/refresh-request.dto';
 import { SignInResponseDto } from './dtos/responses/sign-in-response.dto';
-import { ResponseMessage } from '../common/decorators/response-message.decorator';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import { plainToInstance } from 'class-transformer';
-import { Public } from '../common/decorators/public.decorator';
-import { JwtRefreshGuard } from '../common/guards/jwt-refresh.guard';
+import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('- Auth')
 @Controller('auth')
@@ -41,12 +41,20 @@ export class AuthController {
   @ApiOperation({
     summary: '[User] Access token 재발급',
   })
-  @ApiBearerAuth('refresh-token')
-  @UseGuards(JwtRefreshGuard)
+  @ApiBody({ type: RefreshRequestDto })
+  @ApiBearerAuth()
   @Public()
   @Post('refresh')
-  async refreshAccessToken(@Req() req: any): Promise<{ atk: string }> {
-    const user = req.user;
-    return { atk: await this.authService.refreshATK(user) };
+  async refreshAccessToken(
+    @Headers('authorization') authorization: string,
+    @Body() refreshReq: RefreshRequestDto,
+  ): Promise<{ atk: string }> {
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+      throw new UnauthorizedException('No refresh token provided');
+    }
+
+    const rtk = authorization.replace('Bearer ', '').trim();
+    const email = refreshReq.email;
+    return { atk: await this.authService.refreshATK(email, rtk) };
   }
 }
