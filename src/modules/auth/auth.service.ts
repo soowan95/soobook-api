@@ -51,8 +51,22 @@ export class AuthService {
     };
   }
 
+  async signOut(user: User) {
+    await this.refreshTokenRepository.delete({
+      user: {
+        id: user.id,
+      },
+    });
+
+    await this.userService.incrementTokenVersion(user);
+  }
+
   async generateATK(user: User): Promise<string> {
-    const { password, ...payload } = user;
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      tokenVersion: user.tokenVersion,
+    };
 
     return await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_ACCESS_SECRET,
@@ -69,7 +83,11 @@ export class AuthService {
 
     await this.validateRTK(user, rtk);
 
-    const { password, ...payload } = user;
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      tokenVersion: user.tokenVersion,
+    };
 
     return await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_ACCESS_SECRET,
@@ -77,7 +95,7 @@ export class AuthService {
   }
 
   async generateRTK(user: User): Promise<string> {
-    const rtk = crypto.randomBytes(32).toString('hex');
+    const rtk = crypto.randomBytes(64).toString('hex');
     await this.refreshTokenRepository.save({
       user: user,
       token: await bcrypt.hash(rtk, 10),
@@ -90,10 +108,14 @@ export class AuthService {
   }
 
   private async validateRTK(user: User, rtk: string) {
-    if (!(await bcrypt.compare(rtk, user.refreshToken.token)))
+    if (!(await bcrypt.compare(rtk, user.refreshToken.token))) {
+      await this.signOut(user);
       throw new UnauthorizedException('error.rtk.credentials');
-    if (user.refreshToken.expiresAt > new Date())
+    }
+    if (user.refreshToken.expiresAt > new Date()) {
+      await this.signOut(user);
       throw new HttpException('error.rtk.expire', 419);
+    }
   }
 
   private async calculateExpiryDate(expires: string): Promise<Date> {

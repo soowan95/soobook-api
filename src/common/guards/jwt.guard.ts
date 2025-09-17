@@ -11,7 +11,7 @@ import { Observable } from 'rxjs';
 import { JsonWebTokenError, TokenExpiredError } from '@nestjs/jwt';
 
 @Injectable()
-export class JwtAccessGuard extends AuthGuard('jwt-access') {
+export class JwtGuard extends AuthGuard('jwt') {
   constructor(private readonly reflector: Reflector) {
     super();
   }

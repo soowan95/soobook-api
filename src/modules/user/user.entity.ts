@@ -42,6 +42,9 @@ export class User {
   })
   role: UserRole;
 
+  @Column({ name: 'token_version', default: 0 })
+  tokenVersion: number;
+
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user, {
     onDelete: 'CASCADE',
   })

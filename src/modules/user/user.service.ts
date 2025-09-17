@@ -41,4 +41,8 @@ export class UserService {
     await this.userRepository.save(user);
     return user;
   }
+
+  async incrementTokenVersion(user: User) {
+    await this.userRepository.increment({ id: user.id }, 'tokenVersion', 1);
+  }
 }

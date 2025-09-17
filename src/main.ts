@@ -1,11 +1,10 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import {LogLevel, ValidationPipe } from '@nestjs/common';
+import { LogLevel, ValidationPipe } from '@nestjs/common';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import * as dotenv from 'dotenv';
-import { JwtAccessGuard } from './common/guards/jwt-access.guard';
-import {AuthService} from "./modules/auth/auth.service";
+import { JwtGuard } from './common/guards/jwt.guard';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || `dev`}` });
 
@@ -19,7 +18,6 @@ async function bootstrap() {
     logger: loggerLevel,
   });
   const reflector: Reflector = new Reflector();
-  const authService: AuthService = app.get(AuthService);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -28,7 +26,7 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalGuards(new JwtAccessGuard(reflector, authService));
+  app.useGlobalGuards(new JwtGuard(reflector));
 
   app.useGlobalInterceptors(new ResponseInterceptor(reflector));
 

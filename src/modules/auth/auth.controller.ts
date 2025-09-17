@@ -5,7 +5,15 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Body, Controller, Post, Headers, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Headers,
+  UnauthorizedException,
+  Req,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInRequestDto } from './dtos/requests/sign-in-request.dto';
 import { RefreshRequestDto } from './dtos/requests/refresh-request.dto';
@@ -13,6 +21,7 @@ import { SignInResponseDto } from './dtos/responses/sign-in-response.dto';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import { plainToInstance } from 'class-transformer';
 import { Public } from '../../common/decorators/public.decorator';
+import {User} from "../user/user.entity";
 
 @ApiTags('- Auth')
 @Controller('auth')
@@ -56,5 +65,19 @@ export class AuthController {
     const rtk = authorization.replace('Bearer ', '').trim();
     const email = refreshReq.email;
     return { atk: await this.authService.refreshATK(email, rtk) };
+  }
+
+  @ApiOperation({
+    summary: '[User] 로그아웃'
+  })
+  @ApiBearerAuth()
+  @ResponseMessage('로그아웃 되었습니다.')
+  @Post('sign-out')
+  async signOut(@Req() req) {
+    const user: User = req.user;
+
+    await this.authService.signOut(user);
+
+    return HttpStatus.OK;
   }
 }
