@@ -1,15 +1,15 @@
 import {
-  BadRequestException,
   HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Argon2Service } from '../../helper/argon2/argon2.service';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { User } from '../user/user.entity';
-import { MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { RefreshToken } from './refresh-token.entity';
 import * as dotenv from 'dotenv';
 import * as crypto from 'crypto';
@@ -34,7 +34,7 @@ export class AuthService {
     const loginUser = await this.userService
       .findByEmailOrThrow(email)
       .catch((_) => {
-        throw new BadRequestException('등록되지 않은 사용자입니다.');
+        throw new UnauthorizedException('error.invalid.credentials');
       });
 
     const isValid = await this.argon2Serivce.verifyPassword(
@@ -42,7 +42,7 @@ export class AuthService {
       password,
     );
 
-    if (!isValid) throw new BadRequestException('로그인 정보를 확인해주세요.');
+    if (!isValid) throw new UnauthorizedException('error.invalid.credentials');
 
     return {
       user: loginUser,
@@ -61,11 +61,13 @@ export class AuthService {
   }
 
   async refreshATK(email: string, rtk: string): Promise<string> {
-    const user = await this.userService.findByEmailOrThrow(email, true).catch((_) => {
-      throw new BadRequestException('등록되지 않은 사용자입니다.');
-    });
-    if (!(await this.validateRTK(user, rtk)))
-      throw new HttpException('Refresh 토큰이 유효하지 않습니다.', 419);
+    const user = await this.userService
+      .findByEmailOrThrow(email, true)
+      .catch((_) => {
+        throw new UnauthorizedException('error.invalid.credentials');
+      });
+
+    await this.validateRTK(user, rtk);
 
     const { password, ...payload } = user;
 
@@ -87,33 +89,26 @@ export class AuthService {
     return rtk;
   }
 
-  async checkRTK(user: User): Promise<boolean> {
-    const rtkCnt = await this.refreshTokenRepository.count({
-      where: {
-        user: user,
-        expiresAt: MoreThan(new Date()),
-      },
-    });
-
-    return rtkCnt > 0;
-  }
-
-  private async validateRTK(user: User, rtk: string): Promise<boolean> {
-    return await bcrypt.compare(rtk, user.refreshToken.token);
+  private async validateRTK(user: User, rtk: string) {
+    if (!(await bcrypt.compare(rtk, user.refreshToken.token)))
+      throw new UnauthorizedException('error.rtk.credentials');
+    if (user.refreshToken.expiresAt > new Date())
+      throw new HttpException('error.rtk.expire', 419);
   }
 
   private async calculateExpiryDate(expires: string): Promise<Date> {
     const expNumber = Number(expires.substring(0, expires.length - 1));
     if (isNaN(expNumber)) {
-      throw new InternalServerErrorException(
-        'Token 만료일 설정을 확인해주세요.',
-      );
+      throw new InternalServerErrorException('error.rtk.wrongType');
     }
     const expType = expires.substring(expires.length - 1);
     let calExpires = 24 * 60 * 60 * 1000;
     switch (expType) {
       case 'd':
         calExpires *= expNumber;
+        break;
+      case 'w':
+        calExpires *= expNumber * 7;
         break;
       case 'm':
         calExpires = expNumber * 30;

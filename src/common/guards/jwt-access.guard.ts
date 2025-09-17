@@ -9,14 +9,10 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { JsonWebTokenError, TokenExpiredError } from '@nestjs/jwt';
-import { AuthService } from '../../modules/auth/auth.service';
 
 @Injectable()
 export class JwtAccessGuard extends AuthGuard('jwt-access') {
-  constructor(
-    private readonly reflector: Reflector,
-    private readonly authService: AuthService,
-  ) {
+  constructor(private readonly reflector: Reflector) {
     super();
   }
 
@@ -33,16 +29,12 @@ export class JwtAccessGuard extends AuthGuard('jwt-access') {
 
   handleRequest(err: any, user: any, info: any) {
     if (info instanceof TokenExpiredError)
-      throw new HttpException('Access 토큰이 만료되었습니다.', 419);
+      throw new HttpException('error.atk.expire', 419);
 
     if (info instanceof JsonWebTokenError)
-      throw new UnauthorizedException('유효하지 않은 access 토큰입니다.');
+      throw new UnauthorizedException('error.atk.invalid');
 
-    if (err || !user)
-      throw new ForbiddenException('Access 인증에 실패했습니다.');
-
-    if (!this.authService.checkRTK(user))
-      throw new ForbiddenException('로그아웃 되었습니다.');
+    if (err || !user) throw new ForbiddenException('error.atk.auth.invalid');
 
     return user;
   }
