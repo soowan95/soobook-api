@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { User, UserRole } from './user.entity';
 import { SignUpRequestDto } from './dtos/requests/sign-up-request.dto';
 import { Argon2Service } from '../../helper/argon2/argon2.service';
 
@@ -37,6 +37,8 @@ export class UserService {
     const user = this.userRepository.create({
       ...signUpRequestDto,
     });
+
+    if (!signUpRequestDto.isGuest) user.role = UserRole.USER;
 
     await this.userRepository.save(user);
     return user;

@@ -8,11 +8,10 @@ import {
 import {
   Body,
   Controller,
-  Post,
   Headers,
-  UnauthorizedException,
+  Post,
   Req,
-  HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInRequestDto } from './dtos/requests/sign-in-request.dto';
@@ -21,7 +20,8 @@ import { SignInResponseDto } from './dtos/responses/sign-in-response.dto';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import { plainToInstance } from 'class-transformer';
 import { Public } from '../../common/decorators/public.decorator';
-import {User} from "../user/user.entity";
+import { User } from '../user/user.entity';
+import type { AuthRequest } from '../../common/interfaces/auth.request.interface';
 
 @ApiTags('- Auth')
 @Controller('auth')
@@ -33,7 +33,7 @@ export class AuthController {
   })
   @ApiBody({ type: SignInRequestDto })
   @ApiOkResponse({ type: SignInResponseDto })
-  @ResponseMessage('로그인 되었습니다.')
+  @ResponseMessage('success.login')
   @Public()
   @Post('sign-in')
   async signIn(
@@ -43,6 +43,21 @@ export class AuthController {
       signInReq.email,
       signInReq.password,
     );
+
+    return plainToInstance(SignInResponseDto, payload);
+  }
+
+  @ApiOperation({
+    summary: '[User] 게스트 로그인',
+  })
+  @ApiOkResponse({ type: SignInResponseDto })
+  @ResponseMessage('success.guest.login')
+  @Public()
+  @Post('guest/sign-in')
+  async guestSignIn() {
+    const signUpGuest = await this.authService.guestSignUp();
+
+    const payload = await this.authService.guestSingIn(signUpGuest);
 
     return plainToInstance(SignInResponseDto, payload);
   }
@@ -68,16 +83,14 @@ export class AuthController {
   }
 
   @ApiOperation({
-    summary: '[User] 로그아웃'
+    summary: '[User] 로그아웃',
   })
   @ApiBearerAuth()
-  @ResponseMessage('로그아웃 되었습니다.')
+  @ResponseMessage('success.logout')
   @Post('sign-out')
-  async signOut(@Req() req) {
+  async signOut(@Req() req: AuthRequest): Promise<void> {
     const user: User = req.user;
 
     await this.authService.signOut(user);
-
-    return HttpStatus.OK;
   }
 }
