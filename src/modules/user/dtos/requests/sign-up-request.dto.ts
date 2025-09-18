@@ -44,4 +44,10 @@ export class SignUpRequestDto {
     example: 'Hong95',
   })
   nickname: string;
+
+  @ApiProperty({
+    description: '게스트 여부',
+    example: false
+  })
+  isGuest: boolean;
 }

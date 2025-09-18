@@ -17,7 +17,7 @@ export class UserController {
   })
   @ApiBody({ type: SignUpRequestDto })
   @ApiOkResponse({ type: SignUpResponseDto })
-  @ResponseMessage('성공적으로 회원가입 됐습니다.')
+  @ResponseMessage('success.signup')
   @Public()
   @Post('sign-up')
   async signUp(

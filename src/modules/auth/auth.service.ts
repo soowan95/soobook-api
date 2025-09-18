@@ -14,6 +14,8 @@ import { RefreshToken } from './refresh-token.entity';
 import * as dotenv from 'dotenv';
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
+import { plainToInstance } from 'class-transformer';
+import { SignUpRequestDto } from '../user/dtos/requests/sign-up-request.dto';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || `dev`}` });
 
@@ -51,7 +53,29 @@ export class AuthService {
     };
   }
 
-  async signOut(user: User) {
+  async guestSignUp(): Promise<User> {
+    const guestRequest = plainToInstance(
+      SignUpRequestDto,
+      User.generateGuest(),
+    );
+    guestRequest.isGuest = true;
+
+    return await this.userService.signUp(guestRequest);
+  }
+
+  async guestSingIn(guest: User): Promise<{
+    user: User;
+    accessToken: string;
+    refreshToken: string;
+  }> {
+    return {
+      user: guest,
+      accessToken: await this.generateATK(guest),
+      refreshToken: await this.generateRTK(guest, true),
+    };
+  }
+
+  async signOut(user: User): Promise<void> {
     await this.refreshTokenRepository.delete({
       user: {
         id: user.id,
@@ -94,13 +118,13 @@ export class AuthService {
     });
   }
 
-  async generateRTK(user: User): Promise<string> {
+  async generateRTK(user: User, isGuest: boolean = false): Promise<string> {
     const rtk = crypto.randomBytes(64).toString('hex');
     await this.refreshTokenRepository.save({
       user: user,
       token: await bcrypt.hash(rtk, 10),
       expiryDate: this.calculateExpiryDate(
-        String(process.env.REFRESH_TOKEN_EXPIRES),
+        isGuest ? '1m' : String(process.env.REFRESH_TOKEN_EXPIRES),
       ),
     });
 

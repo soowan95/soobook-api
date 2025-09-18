@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { RefreshToken } from '../auth/refresh-token.entity';
+import { nanoid } from 'nanoid';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -29,10 +30,10 @@ export class User {
   @Index()
   phoneNo: string;
 
-  @Column({ length: 10 })
+  @Column({ length: 15 })
   name: string;
 
-  @Column({ length: 10, nullable: true })
+  @Column({ length: 15, nullable: true })
   nickname: string;
 
   @Column({
@@ -55,5 +56,23 @@ export class User {
     if (!this.nickname) {
       this.nickname = this.name;
     }
+  }
+
+  static generateGuest(): {
+    email: string;
+    password: string;
+    phoneNo: string;
+    name: string;
+    nickname: string;
+  } {
+    const guestId = `Guest_${nanoid(8)}`;
+
+    return {
+      email: `${guestId}@guest.soobook`,
+      password: nanoid(),
+      phoneNo: '01000000000',
+      name: guestId,
+      nickname: guestId,
+    };
   }
 }
