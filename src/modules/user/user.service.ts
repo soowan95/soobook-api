@@ -42,6 +42,7 @@ export class UserService {
     );
     const user = this.userRepository.create({
       ...signUpRequestDto,
+      nickname: signUpRequestDto.nickname ?? signUpRequestDto.name,
     });
 
     if (!signUpRequestDto.isGuest) user.role = UserRole.USER;

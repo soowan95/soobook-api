@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsPhoneNumber,
   IsStrongPassword,
 } from 'class-validator';
@@ -43,11 +44,12 @@ export class SignUpRequestDto {
     description: '닉네임',
     example: 'Hong95',
   })
-  nickname: string;
+  @IsOptional()
+  nickname?: string;
 
   @ApiProperty({
     description: '게스트 여부',
-    example: false
+    example: false,
   })
   isGuest: boolean;
 }

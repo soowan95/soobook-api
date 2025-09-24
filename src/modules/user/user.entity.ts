@@ -1,5 +1,4 @@
 import {
-  BeforeInsert,
   Column,
   Entity,
   Index,
@@ -50,13 +49,6 @@ export class User {
     onDelete: 'CASCADE',
   })
   refreshToken: RefreshToken;
-
-  @BeforeInsert()
-  setDaultNickName() {
-    if (!this.nickname) {
-      this.nickname = this.name;
-    }
-  }
 
   static generateGuest(): {
     email: string;
