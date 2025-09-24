@@ -1,8 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
 import { SignUpRequestDto } from './dtos/requests/sign-up-request.dto';
 import { Argon2Service } from '../../helper/argon2/argon2.service';
+import { UserUpdateRequestDto } from './dtos/requests/user-update-request.dto';
 
 @Injectable()
 export class UserService {
@@ -26,7 +32,7 @@ export class UserService {
       user = await this.userRepository.findOneBy({
         email: email,
       });
-    if (!user) return Promise.reject('User not found');
+    if (!user) return Promise.reject();
     return user;
   }
 
@@ -42,6 +48,31 @@ export class UserService {
 
     await this.userRepository.save(user);
     return user;
+  }
+
+  async update(
+    updateRequestDto: UserUpdateRequestDto,
+    user: User,
+  ): Promise<User> {
+    if (updateRequestDto.password !== undefined) {
+      if (updateRequestDto.password !== updateRequestDto.passwordConfirm) {
+        throw new BadRequestException('error.user.password.unconfirm');
+      }
+      updateRequestDto.password = await this.argon2Serivce.hashPassword(
+        updateRequestDto.password,
+      );
+    }
+
+    try {
+      Object.assign(user, updateRequestDto);
+
+      return this.userRepository.save(user);
+    } catch (error) {
+      if (error.errno === 1062) {
+        throw new ConflictException('error.user.conflict.nickname');
+      }
+      throw error;
+    }
   }
 
   async incrementTokenVersion(user: User) {

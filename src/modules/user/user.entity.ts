@@ -33,7 +33,7 @@ export class User {
   @Column({ length: 15 })
   name: string;
 
-  @Column({ length: 15, nullable: true })
+  @Column({ length: 15, unique: true })
   nickname: string;
 
   @Column({
