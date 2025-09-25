@@ -123,7 +123,7 @@ export class AuthService {
     await this.refreshTokenRepository.save({
       user: user,
       token: await bcrypt.hash(rtk, 10),
-      expiryDate: this.calculateExpiryDate(
+      expiresAt: await this.calculateExpiresAt(
         isGuest ? '1m' : String(process.env.REFRESH_TOKEN_EXPIRES),
       ),
     });
@@ -136,13 +136,16 @@ export class AuthService {
       await this.signOut(user);
       throw new UnauthorizedException('error.rtk.credentials');
     }
-    if (user.refreshToken.expiresAt > new Date()) {
+    if (user.refreshToken.expiresAt < new Date()) {
       await this.signOut(user);
+      await this.refreshTokenRepository.delete({
+        user: user,
+      });
       throw new HttpException('error.rtk.expire', 419);
     }
   }
 
-  private async calculateExpiryDate(expires: string): Promise<Date> {
+  private async calculateExpiresAt(expires: string): Promise<Date> {
     const expNumber = Number(expires.substring(0, expires.length - 1));
     if (isNaN(expNumber)) {
       throw new InternalServerErrorException('error.rtk.wrongType');
@@ -157,10 +160,10 @@ export class AuthService {
         calExpires *= expNumber * 7;
         break;
       case 'm':
-        calExpires = expNumber * 30;
+        calExpires *= expNumber * 30;
         break;
       case 'y':
-        calExpires = expNumber * 365;
+        calExpires *= expNumber * 365;
         break;
     }
     return new Date(Date.now() + calExpires);
