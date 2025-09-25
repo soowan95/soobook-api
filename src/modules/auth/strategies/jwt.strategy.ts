@@ -1,7 +1,7 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import * as dotenv from 'dotenv';
-import { Inject, UnauthorizedException } from '@nestjs/common';
+import { HttpException, Inject, UnauthorizedException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from '../../user/user.entity';
 
@@ -24,9 +24,13 @@ export class JwtStrategy extends PassportStrategy(
   async validate(payload: any) {
     const user = await this.userRepository.findOne({
       where: { id: payload.sub },
+      relations: ['refreshToken'],
     });
 
     if (!user) throw new UnauthorizedException('error.invalid.credentials');
+
+    if (user.refreshToken.expiresAt < new Date())
+      throw new HttpException('error.rtk.expire', 419);
 
     if (payload.tokenVersion !== user.tokenVersion)
       throw new UnauthorizedException('error.atk.revoked');
