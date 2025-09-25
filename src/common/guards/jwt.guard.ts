@@ -34,7 +34,8 @@ export class JwtGuard extends AuthGuard('jwt') {
     if (info instanceof JsonWebTokenError)
       throw new UnauthorizedException('error.atk.invalid');
 
-    if (err || !user) throw new ForbiddenException('error.atk.auth.invalid');
+    if (err) throw err;
+    if (!user) throw new ForbiddenException('error.atk.auth.invalid');
 
     return user;
   }
