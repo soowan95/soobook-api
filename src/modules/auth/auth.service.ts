@@ -77,9 +77,7 @@ export class AuthService {
 
   async signOut(user: User): Promise<void> {
     await this.refreshTokenRepository.delete({
-      user: {
-        id: user.id,
-      },
+      user: user,
     });
 
     await this.userService.incrementTokenVersion(user);
@@ -133,14 +131,9 @@ export class AuthService {
 
   private async validateRTK(user: User, rtk: string) {
     if (!(await bcrypt.compare(rtk, user.refreshToken.token))) {
-      await this.signOut(user);
       throw new UnauthorizedException('error.rtk.credentials');
     }
     if (user.refreshToken.expiresAt < new Date()) {
-      await this.signOut(user);
-      await this.refreshTokenRepository.delete({
-        user: user,
-      });
       throw new HttpException('error.rtk.expire', 419);
     }
   }
