@@ -18,7 +18,10 @@ export class RefreshToken {
   @Column('timestamp', { name: 'expires_at' })
   expiresAt: Date;
 
-  @OneToOne(() => User, (user) => user.refreshToken)
+  @OneToOne(() => User, (user) => user.refreshToken, {
+    cascade: ['remove'],
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({name: 'user_id'})
   user: User;
 }
