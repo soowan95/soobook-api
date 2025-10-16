@@ -6,7 +6,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Body, Controller, Post, Put, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Post, Put, Req } from '@nestjs/common';
 import { SignUpResponseDto } from './dtos/response/sign-up-response.dto';
 import { SignUpRequestDto } from './dtos/requests/sign-up-request.dto';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
@@ -52,5 +52,15 @@ export class UserController {
     const updateUser = this.userService.update(updateReq, req.user);
 
     return plainToInstance(UserUpdateResponseDto, updateUser);
+  }
+
+  @ApiOperation({
+    summary: '[User] 회원 탈퇴',
+  })
+  @ApiBearerAuth()
+  @ResponseMessage('success.user.delete')
+  @Delete('delete')
+  async delete(@Req() req: AuthRequest) {
+    await this.userService.delete(req.user.id);
   }
 }

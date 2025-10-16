@@ -76,6 +76,12 @@ export class UserService {
     }
   }
 
+  async delete(
+    id: number
+  ): Promise<void> {
+    await this.userRepository.delete(id);
+  }
+
   async incrementTokenVersion(user: User) {
     await this.userRepository.increment({ id: user.id }, 'tokenVersion', 1);
   }
