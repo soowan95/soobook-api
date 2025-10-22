@@ -3,10 +3,12 @@ import {
   Entity,
   Index,
   OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { RefreshToken } from '../auth/refresh-token.entity';
 import { nanoid } from 'nanoid';
+import { Transaction } from '../transaction/transaction.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -49,6 +51,9 @@ export class User {
     onDelete: 'CASCADE',
   })
   refreshToken: RefreshToken;
+
+  @OneToMany(() => Transaction, (transaction) => transaction.user)
+  transactions: Transaction[];
 
   static generateGuest(): {
     email: string;
