@@ -7,13 +7,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Body, Controller, Delete, Post, Put, Req } from '@nestjs/common';
-import { SignUpResponseDto } from './dtos/response/sign-up-response.dto';
+import { SignUpResponseDto } from './dtos/responses/sign-up-response.dto';
 import { SignUpRequestDto } from './dtos/requests/sign-up-request.dto';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import { plainToInstance } from 'class-transformer';
 import { Public } from '../../common/decorators/public.decorator';
 import { UserUpdateRequestDto } from './dtos/requests/user-update-request.dto';
-import { UserUpdateResponseDto } from './dtos/response/user-update-response.dto';
+import { UserUpdateResponseDto } from './dtos/responses/user-update-response.dto';
 import type { AuthRequest } from '../../common/interfaces/auth.request.interface';
 
 @ApiTags('- User')

@@ -2,8 +2,9 @@ import { Module } from '@nestjs/common';
 import { UserModule } from './modules/user/user.module';
 import { Argon2Module } from './helper/argon2/argon2.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { TransactionModule } from './modules/transaction/transaction.module';
 
 @Module({
-  imports: [AuthModule, UserModule, Argon2Module],
+  imports: [AuthModule, UserModule, TransactionModule, Argon2Module],
 })
 export class AppModule {}

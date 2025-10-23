@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../user/user.entity';
+import Decimal from 'decimal.js';
 
 export enum TransactionType {
   INCOME = 'income',
@@ -28,7 +29,7 @@ export class Transaction {
   user: User;
 
   @Column('decimal', { precision: 15, scale: 2 })
-  amount: string;
+  amount: Decimal;
 
   @Column({
     type: 'enum',
@@ -36,13 +37,13 @@ export class Transaction {
   })
   type: TransactionType;
 
-  @Column({ nullable: true })
+  @Column({ length: 30, nullable: true })
   description: string;
 
   @Column({ nullable: true })
   memo: string;
 
-  @Column({ nullable: true })
+  @Column()
   location: string;
 
   @CreateDateColumn({ name: 'created_at' })
