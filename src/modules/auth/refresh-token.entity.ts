@@ -1,4 +1,5 @@
 import {
+  BeforeUpdate,
   Column,
   Entity,
   JoinColumn,
@@ -6,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../user/user.entity';
+import { requestContext } from '../../common/middlewares/request-context';
 
 @Entity()
 export class RefreshToken {
@@ -24,4 +26,15 @@ export class RefreshToken {
   })
   @JoinColumn({name: 'user_id'})
   user: User;
+
+  @Column({ name: 'updated_ip', nullable: true })
+  updatedIp: string;
+
+  @BeforeUpdate()
+  setUpdatedIp() {
+    const store = requestContext.getStore();
+    if (store?.ip) {
+      this.updatedIp = store.ip;
+    }
+  }
 }

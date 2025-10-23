@@ -6,9 +6,11 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  BeforeUpdate,
 } from 'typeorm';
 import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
+import { requestContext } from '../../common/middlewares/request-context';
 
 export enum TransactionType {
   INCOME = 'income',
@@ -51,4 +53,15 @@ export class Transaction {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @Column({ name: 'updated_ip', nullable: true })
+  updatedIp: string;
+
+  @BeforeUpdate()
+  setUpdatedIp() {
+    const store = requestContext.getStore();
+    if (store?.ip) {
+      this.updatedIp = store.ip;
+    }
+  }
 }
