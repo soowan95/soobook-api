@@ -5,10 +5,12 @@ import {
   OneToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  BeforeUpdate,
 } from 'typeorm';
 import { RefreshToken } from '../auth/refresh-token.entity';
 import { nanoid } from 'nanoid';
 import { Transaction } from '../transaction/transaction.entity';
+import { requestContext } from '../../common/middlewares/request-context';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -47,6 +49,9 @@ export class User {
   @Column({ name: 'token_version', default: 0 })
   tokenVersion: number;
 
+  @Column({ name: 'updated_ip', nullable: true })
+  updatedIp: string;
+
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user, {
     onDelete: 'CASCADE',
   })
@@ -54,6 +59,14 @@ export class User {
 
   @OneToMany(() => Transaction, (transaction) => transaction.user)
   transactions: Transaction[];
+
+  @BeforeUpdate()
+  setUpdatedIp() {
+    const store = requestContext.getStore();
+    if (store?.ip) {
+      this.updatedIp = store.ip;
+    }
+  }
 
   static generateGuest(): {
     email: string;
