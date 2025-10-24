@@ -11,6 +11,7 @@ import {
 import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
 import { requestContext } from '../../common/middlewares/request-context';
+import { Account } from '../account/account.entity';
 
 export enum TransactionType {
   INCOME = 'income',
@@ -29,6 +30,13 @@ export class Transaction {
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @ManyToOne(() => Account, (account) => account.transactions, {
+    cascade: ['remove'],
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'account_id' })
+  account: Account;
 
   @Column('decimal', { precision: 15, scale: 2 })
   amount: Decimal;

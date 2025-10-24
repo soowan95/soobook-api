@@ -5,6 +5,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -12,6 +13,7 @@ import {
 import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
 import { requestContext } from '../../common/middlewares/request-context';
+import { Transaction } from '../transaction/transaction.entity';
 
 export enum AccountType {
   CASH = 'cash',
@@ -73,6 +75,9 @@ export class Account {
 
   @OneToOne(() => Account, (account) => account.linkedAccount)
   linkedCard: Account;
+
+  @OneToMany(() => Transaction, (transaction) => transaction.account)
+  transactions: Transaction[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
