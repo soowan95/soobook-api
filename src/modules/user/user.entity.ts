@@ -11,6 +11,7 @@ import { RefreshToken } from '../auth/refresh-token.entity';
 import { nanoid } from 'nanoid';
 import { Transaction } from '../transaction/transaction.entity';
 import { requestContext } from '../../common/middlewares/request-context';
+import { Account } from '../account/account.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -59,6 +60,9 @@ export class User {
 
   @OneToMany(() => Transaction, (transaction) => transaction.user)
   transactions: Transaction[];
+
+  @OneToMany(() => Account, (account) => account.user)
+  accounts: Account[];
 
   @BeforeUpdate()
   setUpdatedIp() {
