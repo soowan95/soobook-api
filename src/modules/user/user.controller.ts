@@ -15,6 +15,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import { UserUpdateRequestDto } from './dtos/requests/user-update-request.dto';
 import { UserUpdateResponseDto } from './dtos/responses/user-update-response.dto';
 import type { AuthRequest } from '../../common/interfaces/auth.request.interface';
+import { User } from './user.entity';
 
 @ApiTags('- User')
 @Controller('user')
@@ -32,7 +33,7 @@ export class UserController {
   async signUp(
     @Body() signUpReq: SignUpRequestDto,
   ): Promise<SignUpResponseDto> {
-    const signUpUser = this.userService.signUp(signUpReq);
+    const signUpUser: Promise<User> = this.userService.signUp(signUpReq);
 
     return plainToInstance(SignUpResponseDto, signUpUser);
   }
@@ -43,13 +44,13 @@ export class UserController {
   @ApiBody({ type: UserUpdateRequestDto })
   @ApiOkResponse({ type: UserUpdateResponseDto })
   @ApiBearerAuth()
-  @ResponseMessage('success.user.update')
+  @ResponseMessage('success.update')
   @Put('update')
   async update(
     @Body() updateReq: UserUpdateRequestDto,
     @Req() req: AuthRequest,
-  ) {
-    const updateUser = this.userService.update(updateReq, req.user);
+  ): Promise<UserUpdateResponseDto> {
+    const updateUser: Promise<User> = this.userService.update(updateReq, req.user);
 
     return plainToInstance(UserUpdateResponseDto, updateUser);
   }
@@ -58,9 +59,9 @@ export class UserController {
     summary: '[User] 회원 탈퇴',
   })
   @ApiBearerAuth()
-  @ResponseMessage('success.user.delete')
+  @ResponseMessage('success.delete')
   @Delete('delete')
-  async delete(@Req() req: AuthRequest) {
+  async delete(@Req() req: AuthRequest): Promise<void> {
     await this.userService.delete(req.user.id);
   }
 }
