@@ -4,9 +4,16 @@ import { Argon2Module } from './helper/argon2/argon2.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { RequestContextMiddleware } from './common/middlewares/request-context.middleware';
+import { AccountModule } from './modules/account/account.module';
 
 @Module({
-  imports: [AuthModule, UserModule, TransactionModule, Argon2Module],
+  imports: [
+    AuthModule,
+    UserModule,
+    TransactionModule,
+    AccountModule,
+    Argon2Module,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
