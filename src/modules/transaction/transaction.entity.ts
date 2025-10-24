@@ -1,17 +1,8 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  JoinColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  BeforeUpdate,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
-import { requestContext } from '../../common/middlewares/request-context';
 import { Account } from '../account/account.entity';
+import { Soobook } from '../../common/interfaces/soobook.entity';
 
 export enum TransactionType {
   INCOME = 'income',
@@ -20,10 +11,7 @@ export enum TransactionType {
 }
 
 @Entity()
-export class Transaction {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Transaction extends Soobook {
   @ManyToOne(() => User, (user) => user.transactions, {
     cascade: ['remove'],
     onDelete: 'CASCADE',
@@ -55,21 +43,4 @@ export class Transaction {
 
   @Column()
   location: string;
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
-
-  @Column({ name: 'updated_ip', nullable: true })
-  updatedIp: string;
-
-  @BeforeUpdate()
-  setUpdatedIp() {
-    const store = requestContext.getStore();
-    if (store?.ip) {
-      this.updatedIp = store.ip;
-    }
-  }
 }
