@@ -50,10 +50,12 @@ async function bootstrap() {
       })
       .build();
     const documentFactory = () => SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, documentFactory);
+    SwaggerModule.setup('api/swagger', app, documentFactory);
   }
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: ['/'],
+  });
 
   await app.listen(process.env.PORT ?? 3001);
 }
