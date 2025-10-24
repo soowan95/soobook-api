@@ -1,19 +1,9 @@
-import {
-  BeforeUpdate,
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { User } from '../user/user.entity';
-import { requestContext } from '../../common/middlewares/request-context';
+import { Soobook } from '../../common/interfaces/soobook.entity';
 
 @Entity()
-export class RefreshToken {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class RefreshToken extends Soobook {
   @Column()
   token: string;
 
@@ -24,17 +14,6 @@ export class RefreshToken {
     cascade: ['remove'],
     onDelete: 'CASCADE',
   })
-  @JoinColumn({name: 'user_id'})
+  @JoinColumn({ name: 'user_id' })
   user: User;
-
-  @Column({ name: 'updated_ip', nullable: true })
-  updatedIp: string;
-
-  @BeforeUpdate()
-  setUpdatedIp() {
-    const store = requestContext.getStore();
-    if (store?.ip) {
-      this.updatedIp = store.ip;
-    }
-  }
 }

@@ -1,17 +1,9 @@
-import {
-  Column,
-  Entity,
-  Index,
-  OneToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  BeforeUpdate,
-} from 'typeorm';
+import { Column, Entity, Index, OneToMany, OneToOne } from 'typeorm';
 import { RefreshToken } from '../auth/refresh-token.entity';
 import { nanoid } from 'nanoid';
 import { Transaction } from '../transaction/transaction.entity';
-import { requestContext } from '../../common/middlewares/request-context';
 import { Account } from '../account/account.entity';
+import { Soobook } from '../../common/interfaces/soobook.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -20,10 +12,7 @@ export enum UserRole {
 }
 
 @Entity()
-export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class User extends Soobook {
   @Column({ unique: true })
   email: string;
 
@@ -50,9 +39,6 @@ export class User {
   @Column({ name: 'token_version', default: 0 })
   tokenVersion: number;
 
-  @Column({ name: 'updated_ip', nullable: true })
-  updatedIp: string;
-
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user, {
     onDelete: 'CASCADE',
   })
@@ -63,14 +49,6 @@ export class User {
 
   @OneToMany(() => Account, (account) => account.user)
   accounts: Account[];
-
-  @BeforeUpdate()
-  setUpdatedIp() {
-    const store = requestContext.getStore();
-    if (store?.ip) {
-      this.updatedIp = store.ip;
-    }
-  }
 
   static generateGuest(): {
     email: string;
