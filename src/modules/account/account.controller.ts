@@ -57,7 +57,7 @@ export class AccountController {
   @ApiOkResponse({ type: AccountReadResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
-  @Get('show/keyword')
+  @Get('show')
   async showByKeyword(
     @Query('k') keyword: string,
     @Req() req: AuthRequest,
