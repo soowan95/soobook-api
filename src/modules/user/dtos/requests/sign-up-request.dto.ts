@@ -9,7 +9,7 @@ import { IsOptionalString } from '../../../../common/decorators/is-optional-stri
 
 export class SignUpRequestDto {
   @ApiProperty({
-    description: '고유 id 로 사용할 Email',
+    description: 'Email',
     example: 'some-email123@gmail.com',
   })
   @IsEmail()
