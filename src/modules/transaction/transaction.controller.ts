@@ -24,7 +24,7 @@ export class TransactionController {
   })
   @ApiOkResponse({ type: TransactionShowResponseDto, isArray: true })
   @ApiBearerAuth()
-  @ResponseMessage('success.find')
+  @ResponseMessage('success.read')
   @Get('daily')
   async showDaily(
     @Req() req: AuthRequest,
@@ -41,7 +41,7 @@ export class TransactionController {
   })
   @ApiOkResponse({ type: TransactionShowResponseDto, isArray: true })
   @ApiBearerAuth()
-  @ResponseMessage('success.find')
+  @ResponseMessage('success.read')
   @Get('monthly')
   async showMonthly(
     @Req() req: AuthRequest,
