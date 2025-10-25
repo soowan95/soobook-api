@@ -4,7 +4,7 @@ import { Transaction } from '../transaction/transaction.entity';
 
 @Entity()
 export class Category extends Soobook {
-  @Column({ length: 30 })
+  @Column({ length: 30, unique: true })
   name: string;
 
   @OneToMany(() => Category, (category) => category.parent, {
