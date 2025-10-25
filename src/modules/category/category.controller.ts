@@ -1,5 +1,11 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CategoryService } from './category.service';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import { Role } from '../../common/decorators/user-role.decorator';
@@ -8,6 +14,7 @@ import { CategoryCreateRequestDto } from './dtos/requests/category-create-reques
 import { CategoryCreateResponseDto } from './dtos/responses/category-create-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { Category } from './category.entity';
+import { CategoryReadResponseDto } from './dtos/responses/category-read-response.dto';
 
 @ApiTags('- Categories')
 @Controller('categories')
@@ -18,6 +25,7 @@ export class CategoryController {
     summary: '[Category] 생성',
   })
   @ApiBody({ type: CategoryCreateRequestDto })
+  @ApiOkResponse({ type: CategoryCreateResponseDto })
   @ApiBearerAuth()
   @ResponseMessage('success.create')
   @Role(UserRole.ADMIN)
@@ -33,10 +41,13 @@ export class CategoryController {
   @ApiOperation({
     summary: '[Category] 전체 조회',
   })
+  @ApiOkResponse({ type: CategoryReadResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
   @Get('retrieve')
-  async retrieve(): Promise<void> {
-    await this.categoryService.findAll();
+  async retrieve(): Promise<CategoryReadResponseDto[]> {
+    const categories: Category[] = await this.categoryService.findAll();
+
+    return plainToInstance(CategoryReadResponseDto, categories);
   }
 }

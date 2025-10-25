@@ -13,13 +13,16 @@ export class CategoryService {
   async create(request: CategoryCreateRequestDto): Promise<Category> {
     return await this.categoryRepository.save({
       ...request,
-      parent:
-        (await this.categoryRepository.findOneBy({ id: request.parentId })) ??
-        undefined,
+      parent: request.parentId
+        ? ((await this.categoryRepository.findOneBy({
+            id: request.parentId,
+          })) ?? undefined)
+        : undefined,
     });
   }
 
-  async findAll(): Promise<void> {
-    console.log('retrieve category');
+  async findAll(): Promise<Category[]> {
+    console.log(await this.categoryRepository.find({ relations: ['parent'] }));
+    return await this.categoryRepository.find({ relations: ['parent'] });
   }
 }
