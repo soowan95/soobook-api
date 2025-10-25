@@ -13,6 +13,30 @@ export class AccountService {
     private accountRepository: Repository<Account>,
   ) {}
 
+  async findAllByUserId(userId: number): Promise<Account[]> {
+    return await this.accountRepository.find({
+      where: {
+        user: { id: userId },
+      },
+      relations: ['linkedAccount'],
+    });
+  }
+
+  async findAllByKeyword(keyword: string, userId: number): Promise<Account[]> {
+    const likeKeyword = `%${keyword}%`;
+
+    return this.accountRepository
+      .createQueryBuilder('account')
+      .leftJoin('account.user', 'user')
+      .leftJoinAndSelect('account.linkedAccount', 'linkedAccount')
+      .where('user.id = :userId', { userId })
+      .andWhere(
+        'account.name LIKE :likeKeyword OR account.institutionName LIKE :likeKeyword OR account.description LIKE :likeKeyword',
+        { likeKeyword },
+      )
+      .getMany();
+  }
+
   async findByIdOrThrow(id: number): Promise<Account> {
     const account: Account | null = await this.accountRepository.findOneBy({
       id: id,
