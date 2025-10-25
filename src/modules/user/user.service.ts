@@ -36,36 +36,31 @@ export class UserService {
     return user;
   }
 
-  async signUp(signUpRequestDto: SignUpRequestDto): Promise<User> {
-    signUpRequestDto.password = await this.argon2Serivce.hashPassword(
-      signUpRequestDto.password,
-    );
+  async signUp(request: SignUpRequestDto): Promise<User> {
+    request.password = await this.argon2Serivce.hashPassword(request.password);
     const user = this.userRepository.create({
-      ...signUpRequestDto,
-      nickname: signUpRequestDto.nickname ?? signUpRequestDto.name,
+      ...request,
+      nickname: request.nickname ?? request.name,
     });
 
-    if (!signUpRequestDto.isGuest) user.role = UserRole.USER;
+    if (!request.isGuest) user.role = UserRole.USER;
 
     await this.userRepository.save(user);
     return user;
   }
 
-  async update(
-    updateRequestDto: UserUpdateRequestDto,
-    user: User,
-  ): Promise<User> {
-    if (updateRequestDto.password !== undefined) {
-      if (updateRequestDto.password !== updateRequestDto.passwordConfirm) {
+  async update(request: UserUpdateRequestDto, user: User): Promise<User> {
+    if (request.password !== undefined) {
+      if (request.password !== request.passwordConfirm) {
         throw new BadRequestException('error.user.password.unconfirm');
       }
-      updateRequestDto.password = await this.argon2Serivce.hashPassword(
-        updateRequestDto.password,
+      request.password = await this.argon2Serivce.hashPassword(
+        request.password,
       );
     }
 
     try {
-      Object.assign(user, updateRequestDto);
+      user = this.userRepository.merge(user, request);
 
       return this.userRepository.save(user);
     } catch (error) {
@@ -76,13 +71,11 @@ export class UserService {
     }
   }
 
-  async delete(
-    id: number
-  ): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.userRepository.delete(id);
   }
 
-  async incrementTokenVersion(user: User) {
+  async incrementTokenVersion(user: User): Promise<void> {
     await this.userRepository.increment({ id: user.id }, 'tokenVersion', 1);
   }
 }

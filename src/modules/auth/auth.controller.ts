@@ -39,10 +39,8 @@ export class AuthController {
   async signIn(
     @Body() signInReq: SignInRequestDto,
   ): Promise<SignInResponseDto> {
-    const payload = await this.authService.signIn(
-      signInReq.email,
-      signInReq.password,
-    );
+    const payload: { user: User; accessToken: string; refreshToken: string } =
+      await this.authService.signIn(signInReq.email, signInReq.password);
 
     return plainToInstance(SignInResponseDto, payload);
   }
@@ -54,10 +52,11 @@ export class AuthController {
   @ResponseMessage('success.guest.login')
   @Public()
   @Post('guest/sign-in')
-  async guestSignIn() {
+  async guestSignIn(): Promise<SignInResponseDto> {
     const signUpGuest = await this.authService.guestSignUp();
 
-    const payload = await this.authService.guestSingIn(signUpGuest);
+    const payload: { user: User; accessToken: string; refreshToken: string } =
+      await this.authService.guestSingIn(signUpGuest);
 
     return plainToInstance(SignInResponseDto, payload);
   }
@@ -77,8 +76,8 @@ export class AuthController {
       throw new UnauthorizedException('No refresh token provided');
     }
 
-    const rtk = authorization.replace('Bearer ', '').trim();
-    const email = refreshReq.email;
+    const rtk: string = authorization.replace('Bearer ', '').trim();
+    const email: string = refreshReq.email;
     return { atk: await this.authService.refreshATK(email, rtk) };
   }
 

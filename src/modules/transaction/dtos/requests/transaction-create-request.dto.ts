@@ -1,7 +1,8 @@
 import { TransactionType } from '../../transaction.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import Decimal from 'decimal.js';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsOptionalString } from '../../../../common/decorators/is-optional-string.decorator';
 
 export class TransactionCreateRequestDto {
   @ApiProperty({
@@ -22,14 +23,14 @@ export class TransactionCreateRequestDto {
     description: '짧은 설명',
     example: '햄버거',
   })
-  @IsString()
+  @IsOptionalString()
   description?: string;
 
   @ApiProperty({
     description: '긴 설명',
     example: '운동을 가려했지만 햄버거를 먹어버림..',
   })
-  @IsString()
+  @IsOptionalString()
   memo?: string;
 
   @ApiProperty({
@@ -39,4 +40,12 @@ export class TransactionCreateRequestDto {
   @IsNotEmpty({ message: '거래처는 필수값입니다.' })
   @IsString()
   location: string;
+
+  @ApiProperty({
+    description: '계좌 고유 식별자',
+    example: 1,
+  })
+  @IsNotEmpty({ message: '계좌는 필수값읍니다.' })
+  @IsNumber()
+  accountId: number;
 }

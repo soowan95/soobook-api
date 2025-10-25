@@ -1,19 +1,8 @@
-import {
-  BeforeUpdate,
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
-import { requestContext } from '../../common/middlewares/request-context';
 import { Transaction } from '../transaction/transaction.entity';
+import { Soobook } from '../../common/interfaces/soobook.entity';
 
 export enum AccountType {
   CASH = 'cash',
@@ -25,10 +14,7 @@ export enum AccountType {
 }
 
 @Entity()
-export class Account {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Account extends Soobook {
   @ManyToOne(() => User, (user) => user.accounts, {
     cascade: ['remove'],
     onDelete: 'CASCADE',
@@ -42,7 +28,7 @@ export class Account {
   @Column({ name: 'institution_name', nullable: true })
   institutionName: string;
 
-  @Column()
+  @Column({ nullable: true })
   number: string;
 
   @Column({
@@ -51,10 +37,15 @@ export class Account {
   })
   type: AccountType;
 
-  @Column({ name: 'payment_date', nullable: true })
-  paymentDate: Date;
+  @Column('tinyint', { name: 'payment_day', nullable: true, unsigned: true })
+  paymentDay: number;
 
-  @Column('decimal', { nullable: true, precision: 15, scale: 2  })
+  @Column('decimal', {
+    name: 'limit_amount',
+    nullable: true,
+    precision: 15,
+    scale: 2,
+  })
   limitAmount: Decimal;
 
   @Column({ name: 'is_active', default: true })
@@ -63,36 +54,24 @@ export class Account {
   @Column({ length: 30, nullable: true })
   description: string;
 
-  @Column('decimal', { name: 'initial_balance', default: 0, precision: 15, scale: 2 })
+  @Column('decimal', {
+    name: 'initial_balance',
+    default: 0,
+    precision: 15,
+    scale: 2,
+  })
   initialBalance: Decimal;
 
   @Column('decimal', { name: 'current_balance', precision: 15, scale: 2 })
   currentBalance: Decimal;
 
-  @OneToOne(() => Account, (account) => account.linkedCard)
+  @ManyToOne(() => Account, (account) => account.linkedCards)
   @JoinColumn({ name: 'linked_account_id' })
   linkedAccount: Account;
 
-  @OneToOne(() => Account, (account) => account.linkedAccount)
-  linkedCard: Account;
+  @OneToMany(() => Account, (account) => account.linkedAccount)
+  linkedCards: Account[];
 
   @OneToMany(() => Transaction, (transaction) => transaction.account)
   transactions: Transaction[];
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
-
-  @Column({ name: 'updated_ip', nullable: true })
-  updatedIp: string;
-
-  @BeforeUpdate()
-  setUpdatedIp() {
-    const store = requestContext.getStore();
-    if (store?.ip) {
-      this.updatedIp = store.ip;
-    }
-  }
 }

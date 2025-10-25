@@ -12,6 +12,7 @@ import { TransactionShowResponseDto } from './dtos/responses/transaction-show-re
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import { TransactionCreateRequestDto } from './dtos/requests/transaction-create-request.dto';
 import type { AuthRequest } from '../../common/interfaces/auth.request.interface';
+import { Transaction } from './transaction.entity';
 
 @ApiTags('- Transaction')
 @Controller('transaction')
@@ -23,12 +24,14 @@ export class TransactionController {
   })
   @ApiOkResponse({ type: TransactionShowResponseDto, isArray: true })
   @ApiBearerAuth()
-  @ResponseMessage('success.transaction.show.daily')
-  @Get('show/daily')
+  @ResponseMessage('success.read')
+  @Get('daily')
   async showDaily(
     @Req() req: AuthRequest,
   ): Promise<TransactionShowResponseDto[]> {
-    const transactions = await this.transactionService.showDaily(req.user);
+    const transactions: Transaction[] = await this.transactionService.showDaily(
+      req.user.id,
+    );
 
     return plainToInstance(TransactionShowResponseDto, transactions);
   }
@@ -38,12 +41,13 @@ export class TransactionController {
   })
   @ApiOkResponse({ type: TransactionShowResponseDto, isArray: true })
   @ApiBearerAuth()
-  @ResponseMessage('success.transaction.show.monthly')
-  @Get('show/monthly')
+  @ResponseMessage('success.read')
+  @Get('monthly')
   async showMonthly(
     @Req() req: AuthRequest,
   ): Promise<TransactionShowResponseDto[]> {
-    const transactions = await this.transactionService.showMonthly(req.user);
+    const transactions: Transaction[] =
+      await this.transactionService.showMonthly(req.user.id);
 
     return plainToInstance(TransactionShowResponseDto, transactions);
   }
@@ -54,13 +58,16 @@ export class TransactionController {
   @ApiBody({ type: TransactionCreateRequestDto })
   @ApiOkResponse({ type: TransactionShowResponseDto })
   @ApiBearerAuth()
-  @ResponseMessage('success.transaction.create')
+  @ResponseMessage('success.create')
   @Post('create')
   async create(
     @Body() createReq: TransactionCreateRequestDto,
     @Req() req: AuthRequest,
-  ) {
-    const transaction = this.transactionService.create(createReq, req.user);
+  ): Promise<TransactionShowResponseDto> {
+    const transaction: Promise<Transaction> = this.transactionService.create(
+      createReq,
+      req.user,
+    );
 
     return plainToInstance(TransactionShowResponseDto, transaction);
   }

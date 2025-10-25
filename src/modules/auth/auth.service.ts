@@ -33,13 +33,13 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ user: User; accessToken: string; refreshToken: string }> {
-    const loginUser = await this.userService
+    const loginUser: User = await this.userService
       .findByEmailOrThrow(email)
-      .catch((_) => {
+      .catch((_: any): never => {
         throw new UnauthorizedException('error.invalid.credentials');
       });
 
-    const isValid = await this.argon2Serivce.verifyPassword(
+    const isValid: boolean = await this.argon2Serivce.verifyPassword(
       loginUser.password,
       password,
     );
@@ -54,7 +54,7 @@ export class AuthService {
   }
 
   async guestSignUp(): Promise<User> {
-    const guestRequest = plainToInstance(
+    const guestRequest: SignUpRequestDto = plainToInstance(
       SignUpRequestDto,
       User.generateGuest(),
     );
@@ -97,9 +97,9 @@ export class AuthService {
   }
 
   async refreshATK(email: string, rtk: string): Promise<string> {
-    const user = await this.userService
+    const user: User = await this.userService
       .findByEmailOrThrow(email, true)
-      .catch((_) => {
+      .catch((_: any): never => {
         throw new UnauthorizedException('error.invalid.credentials');
       });
 
@@ -117,7 +117,7 @@ export class AuthService {
   }
 
   async generateRTK(user: User, isGuest: boolean = false): Promise<string> {
-    const rtk = crypto.randomBytes(64).toString('hex');
+    const rtk: string = crypto.randomBytes(64).toString('hex');
     await this.refreshTokenRepository.save({
       user: user,
       token: await bcrypt.hash(rtk, 10),
@@ -129,7 +129,7 @@ export class AuthService {
     return rtk;
   }
 
-  private async validateRTK(user: User, rtk: string) {
+  private async validateRTK(user: User, rtk: string): Promise<void> {
     if (!(await bcrypt.compare(rtk, user.refreshToken.token))) {
       throw new UnauthorizedException('error.rtk.credentials');
     }
@@ -139,12 +139,12 @@ export class AuthService {
   }
 
   private async calculateExpiresAt(expires: string): Promise<Date> {
-    const expNumber = Number(expires.substring(0, expires.length - 1));
+    const expNumber: number = Number(expires.substring(0, expires.length - 1));
     if (isNaN(expNumber)) {
       throw new InternalServerErrorException('error.rtk.wrongType');
     }
-    const expType = expires.substring(expires.length - 1);
-    let calExpires = 24 * 60 * 60 * 1000;
+    const expType: string = expires.substring(expires.length - 1);
+    let calExpires: number = 24 * 60 * 60 * 1000;
     switch (expType) {
       case 'd':
         calExpires *= expNumber;
