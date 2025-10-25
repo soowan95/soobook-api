@@ -1,10 +1,10 @@
-import { Exclude, Expose, Transform } from 'class-transformer';
-import { Category } from '../../category.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, Expose, Transform } from 'class-transformer';
 import { IsOptionalNumber } from '../../../../common/decorators/is-optional-number.decorator';
+import { Category } from '../../category.entity';
 import { SoobookDto } from '../../../../common/interfaces/soobook.dto';
 
-export class CategoryCreateResponseDto extends SoobookDto {
+export class CategoryReadResponseDto extends SoobookDto {
   @ApiProperty({
     description: '부모 카테고리 ID',
   })
