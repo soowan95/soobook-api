@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -15,6 +15,7 @@ import { CategoryCreateResponseDto } from './dtos/responses/category-create-resp
 import { plainToInstance } from 'class-transformer';
 import { Category } from './category.entity';
 import { CategoryReadResponseDto } from './dtos/responses/category-read-response.dto';
+import { CategoryUpdateRequestDto } from './dtos/requests/category-update-request.dto';
 
 @ApiTags('- Categories')
 @Controller('categories')
@@ -49,5 +50,22 @@ export class CategoryController {
     const categories: Category[] = await this.categoryService.findAll();
 
     return plainToInstance(CategoryReadResponseDto, categories);
+  }
+
+  @ApiOperation({
+    summary: '[Category] 갱신',
+  })
+  @ApiBody({ type: CategoryUpdateRequestDto })
+  @ApiOkResponse({ type: CategoryReadResponseDto })
+  @ApiBearerAuth()
+  @ResponseMessage('success.update')
+  @Role(UserRole.ADMIN)
+  @Put('update')
+  async update(
+    @Body() updateReq: CategoryUpdateRequestDto,
+  ): Promise<CategoryReadResponseDto> {
+    const category: Promise<Category> = this.categoryService.update(updateReq);
+
+    return plainToInstance(CategoryReadResponseDto, category);
   }
 }
