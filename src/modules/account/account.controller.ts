@@ -6,7 +6,17 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Body, Controller, Get, Post, Put, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { AccountCreateRequestDto } from './dtos/requests/account-create-request.dto';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import type { AuthRequest } from '../../common/interfaces/auth.request.interface';
@@ -81,5 +91,13 @@ export class AccountController {
     const account: Promise<Account> = this.accountService.update(updateReq);
 
     return plainToInstance(AccountUpdateResponseDto, account);
+  }
+
+  @ApiOperation({ summary: '[Account] 삭제' })
+  @ApiBearerAuth()
+  @ResponseMessage('success.delete')
+  @Delete('delete/:id')
+  async delete(@Param('id') id: number): Promise<void> {
+    await this.accountService.delete(id);
   }
 }

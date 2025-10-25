@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Account } from './account.entity';
 import { AccountCreateRequestDto } from './dtos/requests/account-create-request.dto';
@@ -85,5 +90,23 @@ export class AccountService {
     account = this.accountRepository.merge(account, request);
     await this.accountRepository.save(account);
     return account;
+  }
+
+  async delete(id: number): Promise<void> {
+    const account: Account | null = await this.accountRepository.findOne({
+      where: {
+        id: id,
+      },
+      relations: ['linkedCards'],
+    });
+
+    if (!account) throw new NotFoundException('error.account.notFound');
+
+    if (account.linkedCards.length > 0) {
+      const linkedCardIds: number[] = account.linkedCards.map((card) => card.id);
+      throw new ConflictException({message: 'error.account.linkedCards', data: linkedCardIds});
+    }
+
+    await this.accountRepository.delete(id);
   }
 }
