@@ -1,11 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
 import { Transaction } from '../transaction/transaction.entity';
@@ -47,7 +40,12 @@ export class Account extends Soobook {
   @Column('tinyint', { name: 'payment_day', nullable: true, unsigned: true })
   paymentDay: number;
 
-  @Column('decimal', { nullable: true, precision: 15, scale: 2 })
+  @Column('decimal', {
+    name: 'limit_amount',
+    nullable: true,
+    precision: 15,
+    scale: 2,
+  })
   limitAmount: Decimal;
 
   @Column({ name: 'is_active', default: true })
@@ -67,12 +65,12 @@ export class Account extends Soobook {
   @Column('decimal', { name: 'current_balance', precision: 15, scale: 2 })
   currentBalance: Decimal;
 
-  @OneToOne(() => Account, (account) => account.linkedCard)
+  @ManyToOne(() => Account, (account) => account.linkedCards)
   @JoinColumn({ name: 'linked_account_id' })
   linkedAccount: Account;
 
-  @OneToOne(() => Account, (account) => account.linkedAccount)
-  linkedCard: Account;
+  @OneToMany(() => Account, (account) => account.linkedAccount)
+  linkedCards: Account[];
 
   @OneToMany(() => Transaction, (transaction) => transaction.account)
   transactions: Transaction[];
