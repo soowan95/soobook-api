@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsPhoneNumber, IsStrongPassword } from 'class-validator';
+import { IsOptionalString } from '../../../../common/decorators/is-optional-string.decorator';
 
 export class UserUpdateRequestDto {
   @ApiProperty({
     description: '비밀번호',
     example: 'Qwer1234!',
   })
-  @IsOptional()
+  @IsOptionalString()
   @IsStrongPassword(
     {},
     { message: '비밀번호는 대문자, 소문자, 숫자, 특수문자를 포함해야 합니다.' },
@@ -17,7 +18,7 @@ export class UserUpdateRequestDto {
     description: '비밀번호 확인',
     example: 'Qwer1234!',
   })
-  @IsOptional()
+  @IsOptionalString()
   passwordConfirm?: string;
 
   @ApiProperty({
@@ -32,13 +33,13 @@ export class UserUpdateRequestDto {
     description: '이름',
     example: '홍길동',
   })
-  @IsOptional()
+  @IsOptionalString()
   name?: string;
 
   @ApiProperty({
     description: '닉네임',
     example: 'Hong95',
   })
-  @IsOptional()
+  @IsOptionalString()
   nickname?: string;
 }

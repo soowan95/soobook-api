@@ -60,7 +60,7 @@ export class UserService {
     }
 
     try {
-      Object.assign(user, request);
+      user = this.userRepository.merge(user, request);
 
       return this.userRepository.save(user);
     } catch (error) {

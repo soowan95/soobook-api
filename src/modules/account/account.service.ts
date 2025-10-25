@@ -3,6 +3,8 @@ import { Repository } from 'typeorm';
 import { Account } from './account.entity';
 import { AccountCreateRequestDto } from './dtos/requests/account-create-request.dto';
 import { User } from '../user/user.entity';
+import { AccountUpdateRequestDto } from './dtos/requests/account-update-request.dto';
+import Decimal from 'decimal.js';
 
 @Injectable()
 export class AccountService {
@@ -35,6 +37,28 @@ export class AccountService {
       linkedAccount: linkedAccount ?? undefined,
     });
 
+    await this.accountRepository.save(account);
+    return account;
+  }
+
+  async update(request: AccountUpdateRequestDto): Promise<Account> {
+    let account: Account | null = await this.accountRepository.findOneBy({
+      id: request.id,
+    });
+
+    if (!account) throw new NotFoundException('error.account.notFound');
+
+    if (request.initialBalance) {
+      const difference: Decimal = new Decimal(request.initialBalance).minus(
+        new Decimal(account.initialBalance),
+      );
+
+      request.currentBalance = new Decimal(account.currentBalance)
+        .plus(difference)
+        .toString();
+    }
+
+    account = this.accountRepository.merge(account, request);
     await this.accountRepository.save(account);
     return account;
   }

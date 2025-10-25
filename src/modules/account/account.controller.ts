@@ -6,13 +6,15 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Body, Controller, Post, Req } from '@nestjs/common';
+import { Body, Controller, Post, Put, Req } from '@nestjs/common';
 import { AccountCreateRequestDto } from './dtos/requests/account-create-request.dto';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import type { AuthRequest } from '../../common/interfaces/auth.request.interface';
 import { plainToInstance } from 'class-transformer';
 import { AccountCreateResponseDto } from './dtos/responses/account-create-response.dto';
 import { Account } from './account.entity';
+import { AccountUpdateRequestDto } from './dtos/requests/account-update-request.dto';
+import { AccountUpdateResponseDto } from './dtos/responses/account-update-response.dto';
 
 @ApiTags('- Account')
 @Controller('account')
@@ -29,8 +31,22 @@ export class AccountController {
     @Body() createReq: AccountCreateRequestDto,
     @Req() req: AuthRequest,
   ): Promise<AccountCreateResponseDto> {
-    const account: Promise<Account> = this.accountService.create(createReq, req.user);
+    const account: Promise<Account> = this.accountService.create(
+      createReq,
+      req.user,
+    );
 
     return plainToInstance(AccountCreateResponseDto, account);
+  }
+
+  @ApiOperation({ summary: '[Account] 갱신' })
+  @ApiBody({ type: AccountUpdateRequestDto })
+  @ApiBearerAuth()
+  @ResponseMessage('success.update')
+  @Put('update')
+  async update(@Body() updateReq: AccountUpdateRequestDto): Promise<AccountUpdateResponseDto> {
+    const account: Promise<Account> = this.accountService.update(updateReq);
+
+    return plainToInstance(AccountUpdateResponseDto, account);
   }
 }

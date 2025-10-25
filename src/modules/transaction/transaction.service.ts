@@ -5,6 +5,8 @@ import { endOfDay, endOfMonth, startOfDay, startOfMonth } from 'date-fns';
 import { TransactionCreateRequestDto } from './dtos/requests/transaction-create-request.dto';
 import { User } from '../user/user.entity';
 import { AccountService } from '../account/account.service';
+import { AccountUpdateRequestDto } from '../account/dtos/requests/account-update-request.dto';
+import Decimal from 'decimal.js';
 
 @Injectable()
 export class TransactionService {
@@ -37,9 +39,24 @@ export class TransactionService {
   }
 
   async create(request: TransactionCreateRequestDto, user: User) {
-    const account = await this.accountService.findByIdOrThrow(
-      request.accountId,
-    );
+    let account = await this.accountService.findByIdOrThrow(request.accountId);
+
+    let accountUpdateRequestDto: AccountUpdateRequestDto =
+      new AccountUpdateRequestDto();
+
+    switch (request.type) {
+      case 'income':
+        accountUpdateRequestDto.currentBalance = new Decimal(account.currentBalance)
+          .plus(request.amount)
+          .toString();
+        break;
+      case 'expense':
+        accountUpdateRequestDto.currentBalance = new Decimal(account.currentBalance)
+          .minus(request.amount)
+          .toString();
+    }
+
+    account = await this.accountService.update(accountUpdateRequestDto);
 
     const transaction = this.transactionRepository.create({
       ...request,
