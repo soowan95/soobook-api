@@ -37,6 +37,8 @@ export class UserService {
   }
 
   async signUp(request: SignUpRequestDto): Promise<User> {
+    if (request.email) await this.validateEmail(request.email);
+    if (request.nickname) await this.validateNickname(request.nickname);
     request.password = await this.argon2Serivce.hashPassword(request.password);
     const user = this.userRepository.create({
       ...request,
@@ -50,6 +52,7 @@ export class UserService {
   }
 
   async update(request: UserUpdateRequestDto, user: User): Promise<User> {
+    if (request.nickname) await this.validateNickname(request.nickname);
     if (request.password !== undefined) {
       if (request.password !== request.passwordConfirm) {
         throw new BadRequestException('error.user.password.unconfirm');
@@ -59,16 +62,9 @@ export class UserService {
       );
     }
 
-    try {
-      user = this.userRepository.merge(user, request);
+    user = this.userRepository.merge(user, request);
 
-      return this.userRepository.save(user);
-    } catch (error) {
-      if (error.errno === 1062) {
-        throw new ConflictException('error.user.conflict.nickname');
-      }
-      throw error;
-    }
+    return this.userRepository.save(user);
   }
 
   async delete(id: number): Promise<void> {
@@ -77,5 +73,20 @@ export class UserService {
 
   async incrementTokenVersion(user: User): Promise<void> {
     await this.userRepository.increment({ id: user.id }, 'tokenVersion', 1);
+  }
+
+  private async validateEmail(email: string): Promise<void> {
+    const userCnt: number = await this.userRepository.countBy({
+      email: email,
+    });
+    if (userCnt > 0) throw new ConflictException('warning.user.conflict.email');
+  }
+
+  private async validateNickname(nickname: string): Promise<void> {
+    const userCnt: number = await this.userRepository.countBy({
+      nickname: nickname,
+    });
+    if (userCnt > 0)
+      throw new ConflictException('warning.user.conflict.nickname');
   }
 }

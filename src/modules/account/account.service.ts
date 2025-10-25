@@ -104,7 +104,7 @@ export class AccountService {
 
     if (account.linkedCards.length > 0) {
       const linkedCardIds: number[] = account.linkedCards.map((card) => card.id);
-      throw new ConflictException({message: 'error.account.linkedCards', data: linkedCardIds});
+      throw new ConflictException({message: 'warning.account.linkedCards', data: linkedCardIds});
     }
 
     await this.accountRepository.delete(id);

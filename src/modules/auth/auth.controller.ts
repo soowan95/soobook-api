@@ -73,7 +73,7 @@ export class AuthController {
     @Body() refreshReq: RefreshRequestDto,
   ): Promise<{ atk: string }> {
     if (!authorization || !authorization.startsWith('Bearer ')) {
-      throw new UnauthorizedException('No refresh token provided');
+      throw new UnauthorizedException('error.rtk.notFound');
     }
 
     const rtk: string = authorization.replace('Bearer ', '').trim();
