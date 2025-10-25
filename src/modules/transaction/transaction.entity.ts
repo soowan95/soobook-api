@@ -3,6 +3,7 @@ import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
 import { Account } from '../account/account.entity';
 import { Soobook } from '../../common/interfaces/soobook.entity';
+import { Category } from '../category/category.entity';
 
 export enum TransactionType {
   INCOME = 'income',
@@ -25,6 +26,10 @@ export class Transaction extends Soobook {
   })
   @JoinColumn({ name: 'account_id' })
   account: Account;
+
+  @ManyToOne(() => Category, (category) => category.transactions)
+  @JoinColumn({ name: 'category_id' })
+  category: Category;
 
   @Column('decimal', { precision: 15, scale: 2 })
   amount: Decimal;
