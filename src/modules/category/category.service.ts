@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Category } from './category.entity';
 import { CategoryCreateRequestDto } from './dtos/requests/category-create-request.dto';
@@ -28,7 +33,7 @@ export class CategoryService {
       id: request.id,
     });
 
-    if (!category) throw new Error('error.category.notFound');
+    if (!category) throw new NotFoundException('error.category.notFound');
 
     const parentCategory: Category | undefined = await this.findParent(
       request.parentId,
@@ -40,6 +45,30 @@ export class CategoryService {
     });
 
     return this.categoryRepository.save(category);
+  }
+
+  async delete(id: number, cascade: boolean): Promise<void> {
+    const category: Category | null = await this.categoryRepository.findOne({
+      where: {
+        id: id,
+      },
+      relations: ['children'],
+    });
+
+    if (!category) throw new NotFoundException('error.category.notFound');
+
+    if (category.children.length > 0) {
+      const childIds: number[] = category.children.map((child) => child.id);
+      if (cascade) {
+        for (const childId of childIds) {
+          await this.delete(childId, true);
+        }
+      } else {
+        throw new ConflictException('warning.category.children');
+      }
+    }
+
+    await this.categoryRepository.delete(id);
   }
 
   private async findParent(
