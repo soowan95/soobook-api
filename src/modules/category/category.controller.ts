@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put, Query,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -67,5 +75,16 @@ export class CategoryController {
     const category: Promise<Category> = this.categoryService.update(updateReq);
 
     return plainToInstance(CategoryReadResponseDto, category);
+  }
+
+  @ApiOperation({
+    summary: '[Category] 삭제',
+  })
+  @ApiBearerAuth()
+  @ResponseMessage('success.delete')
+  @Role(UserRole.ADMIN)
+  @Delete('delete/:id')
+  async delete(@Param('id') id: number, @Query('c') cascade: boolean): Promise<void> {
+    await this.categoryService.delete(id, cascade);
   }
 }
