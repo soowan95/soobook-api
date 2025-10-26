@@ -5,6 +5,7 @@ import { LogLevel, ValidationPipe } from '@nestjs/common';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import * as dotenv from 'dotenv';
 import { JwtGuard } from './common/guards/jwt.guard';
+import { RoleGuard } from './common/guards/role.guard';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || `dev`}` });
 
@@ -26,7 +27,7 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalGuards(new JwtGuard(reflector));
+  app.useGlobalGuards(new JwtGuard(reflector), new RoleGuard(reflector));
 
   app.useGlobalInterceptors(new ResponseInterceptor(reflector));
 

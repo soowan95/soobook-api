@@ -5,14 +5,16 @@ import { AuthModule } from './modules/auth/auth.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { RequestContextMiddleware } from './common/middlewares/request-context.middleware';
 import { AccountModule } from './modules/account/account.module';
+import { CategoryModule } from './modules/category/category.module';
 
 @Module({
   imports: [
+    Argon2Module,
+    AccountModule,
     AuthModule,
+    CategoryModule,
     UserModule,
     TransactionModule,
-    AccountModule,
-    Argon2Module,
   ],
 })
 export class AppModule implements NestModule {

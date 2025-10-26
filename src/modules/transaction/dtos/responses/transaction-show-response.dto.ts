@@ -39,7 +39,7 @@ export class TransactionShowResponseDto extends SoobookDto {
   location: string;
 
   @ApiProperty({
-    description: '계좌 고유 식별자'
+    description: '계좌 ID'
   })
   @Expose()
   @Transform(({ obj }) => obj.account.id, { toClassOnly: true })

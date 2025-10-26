@@ -3,7 +3,7 @@ import { Transform } from 'class-transformer';
 
 export class SignUpResponseDto {
   @ApiProperty({
-    description: '고유 id 로 사용할 Email',
+    description: 'Email',
   })
   @Transform(({ obj }) => obj.email, { toClassOnly: true })
   email: string;

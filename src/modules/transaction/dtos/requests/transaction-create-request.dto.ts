@@ -42,7 +42,7 @@ export class TransactionCreateRequestDto {
   location: string;
 
   @ApiProperty({
-    description: '계좌 고유 식별자',
+    description: '계좌 ID',
     example: 1,
   })
   @IsNotEmpty({ message: '계좌는 필수값읍니다.' })
