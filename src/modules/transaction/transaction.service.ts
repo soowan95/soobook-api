@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Between, Repository } from 'typeorm';
-import { Transaction, TransactionType } from './transaction.entity';
+import { Transaction } from './transaction.entity';
 import { endOfDay, endOfMonth, startOfDay, startOfMonth } from 'date-fns';
 import { TransactionCreateRequestDto } from './dtos/requests/transaction-create-request.dto';
 import { User } from '../user/user.entity';
@@ -8,6 +8,7 @@ import { AccountService } from '../account/account.service';
 import { AccountUpdateRequestDto } from '../account/dtos/requests/account-update-request.dto';
 import Decimal from 'decimal.js';
 import { Account } from '../account/account.entity';
+import { TransactionType } from './transaction-type.enum';
 
 @Injectable()
 export class TransactionService {
@@ -55,9 +56,7 @@ export class TransactionService {
       case 'income':
         accountUpdateRequestDto.currentBalance = new Decimal(
           account.currentBalance,
-        )
-          .plus(request.amount)
-          .toString();
+        ).plus(request.amount);
         break;
       case 'expense':
         await this.checkBalance(
@@ -66,9 +65,7 @@ export class TransactionService {
         );
         accountUpdateRequestDto.currentBalance = new Decimal(
           account.currentBalance,
-        )
-          .minus(request.amount)
-          .toString();
+        ).minus(request.amount);
         break;
       case 'transfer':
         toAccount = await this.accountService.findByIdOrThrow(
@@ -81,15 +78,11 @@ export class TransactionService {
         accountUpdateRequestDto.id = account.id;
         accountUpdateRequestDto.currentBalance = new Decimal(
           account.currentBalance,
-        )
-          .minus(request.amount)
-          .toString();
+        ).minus(request.amount);
         toAccountUpdateRequestDto.id = toAccount.id;
         toAccountUpdateRequestDto.currentBalance = new Decimal(
           toAccount.currentBalance,
-        )
-          .plus(request.amount)
-          .toString();
+        ).plus(request.amount);
         request.location = `${account.name} -> ${toAccount.name}`;
         break;
     }

@@ -10,6 +10,7 @@ import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
 import { Transaction } from '../transaction/transaction.entity';
 import { Soobook } from '../../common/interfaces/soobook.entity';
+import { Recurrence } from '../recurrence/recurrence.entity';
 
 export enum AccountType {
   CASH = 'cash',
@@ -38,8 +39,7 @@ export class Account extends Soobook {
   @Column({ nullable: true })
   number: string;
 
-  @Column({
-    type: 'enum',
+  @Column('enum', {
     enum: AccountType,
   })
   type: AccountType;
@@ -84,4 +84,7 @@ export class Account extends Soobook {
 
   @OneToOne(() => Transaction, (transaction) => transaction.toAccount)
   transfer: Transaction;
+
+  @OneToMany(() => Recurrence, (recurrence) => recurrence.account)
+  recurrences: Recurrence[];
 }

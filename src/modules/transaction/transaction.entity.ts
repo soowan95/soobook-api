@@ -4,12 +4,8 @@ import Decimal from 'decimal.js';
 import { Account } from '../account/account.entity';
 import { Soobook } from '../../common/interfaces/soobook.entity';
 import { Category } from '../category/category.entity';
-
-export enum TransactionType {
-  INCOME = 'income',
-  EXPENSE = 'expense',
-  TRANSFER = 'transfer',
-}
+import { TransactionType } from './transaction-type.enum';
+import { Recurrence } from '../recurrence/recurrence.entity';
 
 @Entity()
 export class Transaction extends Soobook {
@@ -31,6 +27,10 @@ export class Transaction extends Soobook {
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
+  @ManyToOne(() => Recurrence, (recurrence) => recurrence.transactions)
+  @JoinColumn({ name: 'recurrence_id' })
+  recurrence: Recurrence;
+
   @OneToOne(() => Account, (account) => account.transfer)
   @JoinColumn({ name: 'to_account_id' })
   toAccount: Account;
@@ -38,8 +38,7 @@ export class Transaction extends Soobook {
   @Column('decimal', { precision: 15, scale: 2 })
   amount: Decimal;
 
-  @Column({
-    type: 'enum',
+  @Column('enum', {
     enum: TransactionType,
   })
   type: TransactionType;

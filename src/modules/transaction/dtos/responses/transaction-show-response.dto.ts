@@ -1,8 +1,9 @@
-import { TransactionType } from '../../transaction.entity';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 import { SoobookDto } from '../../../../common/interfaces/soobook.dto';
+import Decimal from 'decimal.js';
+import { TransactionType } from '../../transaction-type.enum';
 
 @Exclude()
 export class TransactionShowResponseDto extends SoobookDto {
@@ -10,7 +11,7 @@ export class TransactionShowResponseDto extends SoobookDto {
     description: '거래 금액',
   })
   @Expose()
-  amount: string;
+  amount: Decimal;
 
   @ApiProperty({
     description: '거래 종류',
