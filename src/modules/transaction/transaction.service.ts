@@ -9,6 +9,7 @@ import { AccountUpdateRequestDto } from '../account/dtos/requests/account-update
 import Decimal from 'decimal.js';
 import { Account } from '../account/account.entity';
 import { TransactionType } from './transaction-type.enum';
+import { CategoryService } from '../category/category.service';
 
 @Injectable()
 export class TransactionService {
@@ -16,6 +17,7 @@ export class TransactionService {
     @Inject('TRANSACTION_REPOSITORY')
     private transactionRepository: Repository<Transaction>,
     private readonly accountService: AccountService,
+    private readonly categoryService: CategoryService,
   ) {}
 
   async showDaily(userId: number): Promise<Transaction[]> {
@@ -44,6 +46,9 @@ export class TransactionService {
     await this.mandatoryTransfer(request);
     let account: Account = await this.accountService.findByIdOrThrow(
       request.accountId,
+    );
+    const category = await this.categoryService.findByIdOrThrow(
+      request.categoryId,
     );
     let toAccount: Account | null = null;
 
@@ -96,6 +101,7 @@ export class TransactionService {
     let transaction: Transaction = this.transactionRepository.create({
       ...request,
       user: user,
+      category: category,
       account: account,
       toAccount: toAccount ?? undefined,
     });

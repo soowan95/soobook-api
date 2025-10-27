@@ -4,6 +4,7 @@ import { IsOptional } from 'class-validator';
 import { SoobookDto } from '../../../../common/interfaces/soobook.dto';
 import Decimal from 'decimal.js';
 import { TransactionType } from '../../transaction-type.enum';
+import { Category } from '../../../category/category.entity';
 
 @Exclude()
 export class TransactionShowResponseDto extends SoobookDto {
@@ -45,6 +46,12 @@ export class TransactionShowResponseDto extends SoobookDto {
   @Expose()
   @Transform(({ obj }) => obj.account.id, { toClassOnly: true })
   accountId: number;
+
+  @ApiProperty({
+    description: '카테고리 ID',
+  })
+  @Expose()
+  category: Category;
 
   @ApiProperty({
     description: '내 계좌 간 이동 시 수령 계좌 ID',

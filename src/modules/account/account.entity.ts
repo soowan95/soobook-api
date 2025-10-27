@@ -1,11 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
 import { Transaction } from '../transaction/transaction.entity';
@@ -26,6 +19,7 @@ export class Account extends Soobook {
   @ManyToOne(() => User, (user) => user.accounts, {
     cascade: ['remove'],
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
@@ -43,9 +37,6 @@ export class Account extends Soobook {
     enum: AccountType,
   })
   type: AccountType;
-
-  @Column('tinyint', { name: 'payment_day', nullable: true, unsigned: true })
-  paymentDay: number;
 
   @Column('decimal', {
     name: 'limit_amount',
@@ -82,8 +73,8 @@ export class Account extends Soobook {
   @OneToMany(() => Transaction, (transaction) => transaction.account)
   transactions: Transaction[];
 
-  @OneToOne(() => Transaction, (transaction) => transaction.toAccount)
-  transfer: Transaction;
+  @OneToMany(() => Transaction, (transaction) => transaction.toAccount)
+  transferTransactions: Transaction[];
 
   @OneToMany(() => Recurrence, (recurrence) => recurrence.account)
   recurrences: Recurrence[];

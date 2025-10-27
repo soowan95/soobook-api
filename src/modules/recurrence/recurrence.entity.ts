@@ -10,7 +10,6 @@ export enum RecurrencePeriod {
   DAILY = 'daily',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
-  YEARLY = 'yearly',
 }
 
 @Entity()
@@ -18,6 +17,7 @@ export class Recurrence extends Soobook {
   @ManyToOne(() => User, (user) => user.recurrences, {
     cascade: ['remove'],
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
@@ -25,12 +25,16 @@ export class Recurrence extends Soobook {
   @ManyToOne(() => Account, (account) => account.recurrences, {
     cascade: ['remove'],
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn({ name: 'account_id' })
   account: Account;
 
   @OneToMany(() => Transaction, (transaction) => transaction.recurrence)
   transactions: Transaction[];
+
+  @Column({ length: 30, nullable: true })
+  description: string;
 
   @Column('decimal', { precision: 15, scale: 2 })
   amount: Decimal;
@@ -41,9 +45,9 @@ export class Recurrence extends Soobook {
   @Column('enum', { enum: RecurrencePeriod })
   period: RecurrencePeriod;
 
-  @Column()
+  @Column({ name: 'execute_day', nullable: true, unsigned: true })
   executeDay: number;
 
-  @Column('timestamp', { name: 'due_date', nullable: true })
-  dueDate: Date;
+  @Column('timestamp', { name: 'end_date', nullable: true })
+  endDate: Date;
 }
