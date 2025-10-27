@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import Decimal from 'decimal.js';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { IsOptionalString } from '../../../../common/decorators/is-optional-string.decorator';
+import { IsOptionalNumber } from '../../../../common/decorators/is-optional-number.decorator';
 
 export class TransactionCreateRequestDto {
   @ApiProperty({
@@ -45,7 +46,14 @@ export class TransactionCreateRequestDto {
     description: '계좌 ID',
     example: 1,
   })
-  @IsNotEmpty({ message: '계좌는 필수값읍니다.' })
+  @IsNotEmpty({ message: '계좌는 필수값입니다.' })
   @IsNumber()
   accountId: number;
+
+  @ApiProperty({
+    description: '내 계좌 간 이동 시 수령 계좌 ID',
+    example: 2,
+  })
+  @IsOptionalNumber()
+  toAccountId?: number;
 }

@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
 import { Account } from '../account/account.entity';
@@ -30,6 +30,10 @@ export class Transaction extends Soobook {
   @ManyToOne(() => Category, (category) => category.transactions)
   @JoinColumn({ name: 'category_id' })
   category: Category;
+
+  @OneToOne(() => Account, (account) => account.transfer)
+  @JoinColumn({ name: 'to_account_id' })
+  toAccount: Account;
 
   @Column('decimal', { precision: 15, scale: 2 })
   amount: Decimal;

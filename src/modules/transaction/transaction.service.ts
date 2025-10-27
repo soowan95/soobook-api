@@ -1,12 +1,13 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Between, Repository } from 'typeorm';
-import { Transaction } from './transaction.entity';
+import { Transaction, TransactionType } from './transaction.entity';
 import { endOfDay, endOfMonth, startOfDay, startOfMonth } from 'date-fns';
 import { TransactionCreateRequestDto } from './dtos/requests/transaction-create-request.dto';
 import { User } from '../user/user.entity';
 import { AccountService } from '../account/account.service';
 import { AccountUpdateRequestDto } from '../account/dtos/requests/account-update-request.dto';
 import Decimal from 'decimal.js';
+import { Account } from '../account/account.entity';
 
 @Injectable()
 export class TransactionService {
@@ -39,32 +40,92 @@ export class TransactionService {
   }
 
   async create(request: TransactionCreateRequestDto, user: User) {
-    let account = await this.accountService.findByIdOrThrow(request.accountId);
+    await this.mandatoryTransfer(request);
+    let account: Account = await this.accountService.findByIdOrThrow(
+      request.accountId,
+    );
+    let toAccount: Account | null = null;
 
     let accountUpdateRequestDto: AccountUpdateRequestDto =
+      new AccountUpdateRequestDto();
+    let toAccountUpdateRequestDto: AccountUpdateRequestDto =
       new AccountUpdateRequestDto();
 
     switch (request.type) {
       case 'income':
-        accountUpdateRequestDto.currentBalance = new Decimal(account.currentBalance)
+        accountUpdateRequestDto.currentBalance = new Decimal(
+          account.currentBalance,
+        )
           .plus(request.amount)
           .toString();
         break;
       case 'expense':
-        accountUpdateRequestDto.currentBalance = new Decimal(account.currentBalance)
+        await this.checkBalance(
+          new Decimal(account.currentBalance),
+          request.amount,
+        );
+        accountUpdateRequestDto.currentBalance = new Decimal(
+          account.currentBalance,
+        )
           .minus(request.amount)
           .toString();
+        break;
+      case 'transfer':
+        toAccount = await this.accountService.findByIdOrThrow(
+          request.toAccountId!,
+        );
+        await this.checkBalance(
+          new Decimal(account.currentBalance),
+          request.amount,
+        );
+        accountUpdateRequestDto.id = account.id;
+        accountUpdateRequestDto.currentBalance = new Decimal(
+          account.currentBalance,
+        )
+          .minus(request.amount)
+          .toString();
+        toAccountUpdateRequestDto.id = toAccount.id;
+        toAccountUpdateRequestDto.currentBalance = new Decimal(
+          toAccount.currentBalance,
+        )
+          .plus(request.amount)
+          .toString();
+        request.location = `${account.name} -> ${toAccount.name}`;
+        break;
     }
 
     account = await this.accountService.update(accountUpdateRequestDto);
 
-    const transaction = this.transactionRepository.create({
+    if (request.type == TransactionType.TRANSFER) {
+      toAccount = await this.accountService.update(toAccountUpdateRequestDto);
+    }
+
+    let transaction: Transaction = this.transactionRepository.create({
       ...request,
       user: user,
       account: account,
+      toAccount: toAccount ?? undefined,
     });
 
-    await this.transactionRepository.save(transaction);
+    transaction = await this.transactionRepository.save(transaction);
     return transaction;
+  }
+
+  private async mandatoryTransfer(
+    request: TransactionCreateRequestDto,
+  ): Promise<void> {
+    if (request.type == TransactionType.TRANSFER) {
+      if (!request.toAccountId) {
+        throw new BadRequestException('error.transaction.mandatory.transfer');
+      } else if (request.accountId == request.toAccountId) {
+        throw new BadRequestException('error.transaction.same.account');
+      }
+    }
+  }
+
+  private async checkBalance(currentBalance: Decimal, amount: Decimal) {
+    if (currentBalance.minus(amount).lt(0)) {
+      throw new BadRequestException('error.transaction.insufficient.balance');
+    }
   }
 }

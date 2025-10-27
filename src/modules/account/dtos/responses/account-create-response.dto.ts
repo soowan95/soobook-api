@@ -66,7 +66,7 @@ export class AccountCreateResponseDto extends SoobookDto {
     description: '신용카드 결제 계좌',
   })
   @Expose()
-  @Transform(({ obj }) => obj.linkedAccount.id, { toClassOnly: true })
+  @Transform(({ obj }) => obj.linkedAccount?.id, { toClassOnly: true })
   @IsOptional()
   linkedAccountId?: number;
 

@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
 import { Transaction } from '../transaction/transaction.entity';
@@ -74,4 +81,7 @@ export class Account extends Soobook {
 
   @OneToMany(() => Transaction, (transaction) => transaction.account)
   transactions: Transaction[];
+
+  @OneToOne(() => Transaction, (transaction) => transaction.toAccount)
+  transfer: Transaction;
 }
