@@ -43,6 +43,13 @@ export class TransactionCreateRequestDto {
   location: string;
 
   @ApiProperty({
+    description: '카테고리 ID',
+    example: 1,
+  })
+  @IsNumber()
+  categoryId: number;
+
+  @ApiProperty({
     description: '계좌 ID',
     example: 1,
   })

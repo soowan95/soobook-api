@@ -6,6 +6,7 @@ import { TransactionModule } from './modules/transaction/transaction.module';
 import { RequestContextMiddleware } from './common/middlewares/request-context.middleware';
 import { AccountModule } from './modules/account/account.module';
 import { CategoryModule } from './modules/category/category.module';
+import { RecurrenceModule } from './modules/recurrence/recurrence.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { CategoryModule } from './modules/category/category.module';
     AccountModule,
     AuthModule,
     CategoryModule,
+    RecurrenceModule,
     UserModule,
     TransactionModule,
   ],

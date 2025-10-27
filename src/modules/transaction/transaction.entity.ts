@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
 import { Account } from '../account/account.entity';
@@ -12,6 +12,7 @@ export class Transaction extends Soobook {
   @ManyToOne(() => User, (user) => user.transactions, {
     cascade: ['remove'],
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
@@ -19,11 +20,14 @@ export class Transaction extends Soobook {
   @ManyToOne(() => Account, (account) => account.transactions, {
     cascade: ['remove'],
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn({ name: 'account_id' })
   account: Account;
 
-  @ManyToOne(() => Category, (category) => category.transactions)
+  @ManyToOne(() => Category, (category) => category.transactions, {
+    nullable: false,
+  })
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
@@ -31,7 +35,7 @@ export class Transaction extends Soobook {
   @JoinColumn({ name: 'recurrence_id' })
   recurrence: Recurrence;
 
-  @OneToOne(() => Account, (account) => account.transfer)
+  @ManyToOne(() => Account, (account) => account.transferTransactions)
   @JoinColumn({ name: 'to_account_id' })
   toAccount: Account;
 

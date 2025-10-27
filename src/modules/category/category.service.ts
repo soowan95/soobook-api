@@ -27,6 +27,14 @@ export class CategoryService {
     return await this.categoryRepository.find({ relations: ['parent'] });
   }
 
+  async findByIdOrThrow(id: number): Promise<Category> {
+    const category: Category | null = await this.categoryRepository.findOneBy({
+      id: id,
+    });
+    if (!category) throw new NotFoundException('error.category.notFound');
+    return category;
+  }
+
   async update(request: CategoryUpdateRequestDto): Promise<Category> {
     let category: Category | null = await this.categoryRepository.findOneBy({
       id: request.id,
