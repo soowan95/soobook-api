@@ -83,8 +83,7 @@ export class AccountService {
       );
 
       request.currentBalance = new Decimal(account.currentBalance)
-        .plus(difference)
-        .toString();
+        .plus(difference);
     }
 
     account = this.accountRepository.merge(account, request);

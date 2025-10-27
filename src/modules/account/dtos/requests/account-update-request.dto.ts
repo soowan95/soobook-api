@@ -5,6 +5,7 @@ import { IsOptionalString } from '../../../../common/decorators/is-optional-stri
 import { IsOptionalNumber } from '../../../../common/decorators/is-optional-number.decorator';
 import { IsOptionalBoolean } from '../../../../common/decorators/is-optional-boolean.decorator';
 import { SoobookDto } from '../../../../common/interfaces/soobook.dto';
+import Decimal from 'decimal.js';
 
 export class AccountUpdateRequestDto extends SoobookDto {
   @ApiProperty({
@@ -69,14 +70,14 @@ export class AccountUpdateRequestDto extends SoobookDto {
     example: 0,
   })
   @IsOptionalString()
-  initialBalance?: string;
+  initialBalance?: Decimal;
 
   @ApiProperty({
     description: '현재 잔액 - transactionService 에서만 사용',
     example: 0,
   })
   @IsOptionalString()
-  currentBalance?: string;
+  currentBalance?: Decimal;
 
   @ApiProperty({
     description: '신용카드 결제 계좌',

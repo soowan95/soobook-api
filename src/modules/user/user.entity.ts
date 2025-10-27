@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 import { Transaction } from '../transaction/transaction.entity';
 import { Account } from '../account/account.entity';
 import { Soobook } from '../../common/interfaces/soobook.entity';
+import { Recurrence } from '../recurrence/recurrence.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -29,8 +30,7 @@ export class User extends Soobook {
   @Column({ length: 15, unique: true })
   nickname: string;
 
-  @Column({
-    type: 'enum',
+  @Column('enum', {
     enum: UserRole,
     default: UserRole.GUEST,
   })
@@ -49,6 +49,9 @@ export class User extends Soobook {
 
   @OneToMany(() => Account, (account) => account.user)
   accounts: Account[];
+
+  @OneToMany(() => Recurrence, (recurrence) => recurrence.user)
+  recurrences: Recurrence[];
 
   static generateGuest(): {
     email: string;

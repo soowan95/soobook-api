@@ -3,6 +3,7 @@ import { IsBoolean, IsPositive, IsString } from 'class-validator';
 import { AccountType } from '../../account.entity';
 import { IsOptionalString } from '../../../../common/decorators/is-optional-string.decorator';
 import { IsOptionalNumber } from '../../../../common/decorators/is-optional-number.decorator';
+import Decimal from 'decimal.js';
 
 export class AccountCreateRequestDto {
   @ApiProperty({
@@ -67,7 +68,7 @@ export class AccountCreateRequestDto {
     example: 0,
   })
   @IsString()
-  initialBalance: string;
+  initialBalance: Decimal;
 
   @ApiProperty({
     description: '신용카드 결제 계좌',
