@@ -24,7 +24,6 @@ export class CategoryService {
   }
 
   async findAll(): Promise<Category[]> {
-    console.log(await this.categoryRepository.find({ relations: ['parent'] }));
     return await this.categoryRepository.find({ relations: ['parent'] });
   }
 
