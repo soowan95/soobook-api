@@ -28,4 +28,13 @@ export class RecurrenceService {
       account: account,
     });
   }
+
+  async findAllByUserId(userId: number): Promise<Recurrence[]> {
+    return await this.recurrenceRepository.find({
+      where: {
+        user: { id: userId },
+      },
+      relations: ['account'],
+    });
+  }
 }
