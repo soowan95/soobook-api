@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import Decimal from 'decimal.js';
 import { TransactionType } from '../../../transaction/transaction-type.enum';
-import { RecurrencePeriod } from '../../recurrence.entity';
+import { RecurrencePeriodType } from '../../recurrence.entity';
 import { IsOptionalNumber } from '../../../../common/decorators/is-optional-number.decorator';
 import { IsOptionalDate } from '../../../../common/decorators/is-optional-date.decorator';
 import { IsOptionalString } from '../../../../common/decorators/is-optional-string.decorator';
@@ -44,7 +44,7 @@ export class RecurrenceCreateRequestDto {
     example: 'monthly',
   })
   @IsNotEmpty({ message: '반복 주기는 필수값입니다.' })
-  period: RecurrencePeriod;
+  periodType: RecurrencePeriodType;
 
   @ApiProperty({
     description: '반복 일 | 요일',
@@ -59,5 +59,5 @@ export class RecurrenceCreateRequestDto {
   })
   @Type(() => Date)
   @IsOptionalDate()
-  dueDate?: Date;
+  endDate?: Date;
 }

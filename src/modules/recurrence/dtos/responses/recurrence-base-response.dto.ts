@@ -9,15 +9,15 @@ export class RecurrenceBaseResponseDto extends SoobookDto {
     description: '계좌 ID',
   })
   @Expose()
-  @Transform(({ obj }) => obj.account.id, { toClassOnly: true })
-  accountId: number;
+  @Transform(({ obj }) => obj.account?.id, { toClassOnly: true })
+  accountId?: number;
 
   @ApiProperty({
     description: '계좌 명',
   })
   @Expose()
-  @Transform(({ obj }) => obj.account.name, { toClassOnly: true })
-  accountName: string;
+  @Transform(({ obj }) => obj.account?.name, { toClassOnly: true })
+  accountName?: string;
 
   @Exclude()
   user: User;

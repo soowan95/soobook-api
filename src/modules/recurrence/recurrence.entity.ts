@@ -6,7 +6,7 @@ import Decimal from 'decimal.js';
 import { TransactionType } from '../transaction/transaction-type.enum';
 import { Transaction } from '../transaction/transaction.entity';
 
-export enum RecurrencePeriod {
+export enum RecurrencePeriodType {
   DAILY = 'daily',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
@@ -42,8 +42,8 @@ export class Recurrence extends Soobook {
   @Column('enum', { enum: TransactionType })
   type: TransactionType;
 
-  @Column('enum', { enum: RecurrencePeriod })
-  period: RecurrencePeriod;
+  @Column('enum', { enum: RecurrencePeriodType, name: 'period_type' })
+  periodType: RecurrencePeriodType;
 
   @Column({ name: 'execute_day', nullable: true, unsigned: true })
   executeDay: number;
