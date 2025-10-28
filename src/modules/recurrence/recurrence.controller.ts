@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Req } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -13,6 +13,7 @@ import { RecurrenceBaseResponseDto } from './dtos/responses/recurrence-base-resp
 import { Recurrence } from './recurrence.entity';
 import { plainToInstance } from 'class-transformer';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
+import { RecurrenceUpdateRequestDto } from './dtos/requests/recurrence-update-request.dto';
 
 @ApiTags('- Recurrence')
 @Controller('recurrence')
@@ -53,5 +54,22 @@ export class RecurrenceController {
       await this.recurrenceService.findAllByUserId(req.user.id);
 
     return plainToInstance(RecurrenceBaseResponseDto, recurrences);
+  }
+
+  @ApiOperation({
+    summary: '[Recurrence] 갱신',
+  })
+  @ApiBody({ type: RecurrenceUpdateRequestDto })
+  @ApiOkResponse({ type: RecurrenceBaseResponseDto })
+  @ApiBearerAuth()
+  @ResponseMessage('success.update')
+  @Put('update')
+  async update(
+    @Body() updateReq: RecurrenceUpdateRequestDto,
+  ): Promise<RecurrenceBaseResponseDto> {
+    const recurrence: Promise<Recurrence> =
+      this.recurrenceService.update(updateReq);
+
+    return plainToInstance(RecurrenceBaseResponseDto, recurrence);
   }
 }
