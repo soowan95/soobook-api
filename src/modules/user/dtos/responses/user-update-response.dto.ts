@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { IsOptional } from 'class-validator';
+import { SoobookDto } from '../../../../common/interfaces/soobook.dto';
 
 @Exclude()
-export class UserUpdateResponseDto {
+export class UserUpdateResponseDto extends SoobookDto {
   @ApiProperty({
     description: '핸드폰 번호 - 대한민국 기준',
   })
