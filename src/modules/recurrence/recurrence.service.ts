@@ -94,7 +94,7 @@ export class RecurrenceService {
     request: RecurrenceUpdateRequestDto,
     recurrence: Recurrence,
   ): Promise<void> {
-    if (request.accountId || request.type) {
+    if (request.type) {
       if (recurrence.transactions?.length > 0) {
         throw new ConflictException('error.recurrence.transactions');
       }
