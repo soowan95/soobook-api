@@ -1,9 +1,9 @@
 #!/bin/sh
 
 HOOKS_DIR="hooks"   # 프로젝트 루트 기준 hooks 디렉토리
+TARGET=".git/hooks/commit-msg"
 
 if [ -f "$HOOKS_DIR/commit-msg" ]; then
-  TARGET=".git/hooks/commit-msg"
 
   # 이미 올바른 심볼릭 링크인지 확인
   if [ "$(readlink -- "$TARGET")" = "../../$HOOKS_DIR/commit-msg" ]; then
@@ -13,4 +13,8 @@ if [ -f "$HOOKS_DIR/commit-msg" ]; then
     chmod +x "$HOOKS_DIR/commit-msg"
     echo "Installed commit-msg hook"
   fi
+fi
+
+if [ ! -x "$TARGET" ]; then
+  chmod +x "$TARGET"
 fi
