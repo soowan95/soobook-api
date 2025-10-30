@@ -14,6 +14,8 @@ import { Recurrence } from './recurrence.entity';
 import { plainToInstance } from 'class-transformer';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import { RecurrenceUpdateRequestDto } from './dtos/requests/recurrence-update-request.dto';
+import { RecurrenceTerminateRequestDto } from './dtos/requests/recurrence-terminate-request.dto';
+import { RecurrenceTerminateResponseDto } from './dtos/responses/recurrence-terminate-response.dto';
 
 @ApiTags('- Recurrence')
 @Controller('recurrence')
@@ -71,5 +73,22 @@ export class RecurrenceController {
       this.recurrenceService.update(updateReq);
 
     return plainToInstance(RecurrenceBaseResponseDto, recurrence);
+  }
+
+  @ApiOperation({
+    summary: '[Recurrence] 종료',
+  })
+  @ApiBody({ type: RecurrenceTerminateRequestDto })
+  @ApiOkResponse({ type: RecurrenceTerminateResponseDto })
+  @ApiBearerAuth()
+  @ResponseMessage('success.terminate')
+  @Put('terminate')
+  async terminate(
+    @Body() terminateReq: RecurrenceTerminateRequestDto,
+  ): Promise<RecurrenceTerminateResponseDto> {
+    const recurrence: Promise<Recurrence> =
+      this.recurrenceService.terminate(terminateReq);
+
+    return plainToInstance(RecurrenceTerminateResponseDto, recurrence);
   }
 }
