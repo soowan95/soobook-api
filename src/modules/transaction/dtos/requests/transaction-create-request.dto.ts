@@ -14,10 +14,10 @@ export class TransactionCreateRequestDto {
   amount: Decimal;
 
   @ApiProperty({
-    description: '거래 종류',
+    description: '거래 유형',
     example: 'income',
   })
-  @IsNotEmpty({ message: '거래 종류는 필수값입니다.' })
+  @IsNotEmpty({ message: '거래 유형는 필수값입니다.' })
   type: TransactionType;
 
   @ApiProperty({

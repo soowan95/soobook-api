@@ -31,7 +31,7 @@ export class RecurrenceUpdateRequestDto extends SoobookDto {
   description?: string;
 
   @ApiProperty({
-    description: '거래 종류',
+    description: '거래 유형',
     example: 'income',
   })
   @IsOptionalString()

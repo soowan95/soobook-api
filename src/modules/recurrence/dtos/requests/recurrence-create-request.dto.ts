@@ -33,10 +33,10 @@ export class RecurrenceCreateRequestDto {
   description?: string;
 
   @ApiProperty({
-    description: '거래 종류',
+    description: '거래 유형',
     example: 'expense',
   })
-  @IsNotEmpty({ message: '거래 종류는 필수값입니다.' })
+  @IsNotEmpty({ message: '거래 유형는 필수값입니다.' })
   type: TransactionType;
 
   @ApiProperty({

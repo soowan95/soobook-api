@@ -11,6 +11,8 @@ import { User } from '../user/user.entity';
 import { AccountService } from '../account/account.service';
 import { Account } from '../account/account.entity';
 import { RecurrenceUpdateRequestDto } from './dtos/requests/recurrence-update-request.dto';
+import { RecurrenceTerminateRequestDto } from './dtos/requests/recurrence-terminate-request.dto';
+import { startOfDay } from 'date-fns';
 
 @Injectable()
 export class RecurrenceService {
@@ -86,6 +88,14 @@ export class RecurrenceService {
       ...request,
       account: account ?? undefined,
     });
+
+    return await this.recurrenceRepository.save(recurrence);
+  }
+
+  async terminate(request: RecurrenceTerminateRequestDto): Promise<Recurrence> {
+    const recurrence: Recurrence = await this.findByIdOrThrow(request.id);
+
+    recurrence.endDate = startOfDay(new Date());
 
     return await this.recurrenceRepository.save(recurrence);
   }
