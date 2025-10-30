@@ -1,9 +1,9 @@
-import { TransactionType } from '../../transaction.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import Decimal from 'decimal.js';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { IsOptionalString } from '../../../../common/decorators/is-optional-string.decorator';
 import { IsOptionalNumber } from '../../../../common/decorators/is-optional-number.decorator';
+import { TransactionType } from '../../transaction-type.enum';
 
 export class TransactionCreateRequestDto {
   @ApiProperty({
@@ -14,10 +14,10 @@ export class TransactionCreateRequestDto {
   amount: Decimal;
 
   @ApiProperty({
-    description: '거래 종류',
+    description: '거래 유형',
     example: 'income',
   })
-  @IsNotEmpty({ message: '거래 종류는 필수값입니다.' })
+  @IsNotEmpty({ message: '거래 유형는 필수값입니다.' })
   type: TransactionType;
 
   @ApiProperty({
@@ -41,6 +41,13 @@ export class TransactionCreateRequestDto {
   @IsNotEmpty({ message: '거래처는 필수값입니다.' })
   @IsString()
   location: string;
+
+  @ApiProperty({
+    description: '카테고리 ID',
+    example: 1,
+  })
+  @IsNumber()
+  categoryId: number;
 
   @ApiProperty({
     description: '계좌 ID',

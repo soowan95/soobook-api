@@ -5,7 +5,8 @@ import {
   Get,
   Param,
   Post,
-  Put, Query,
+  Put,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -19,11 +20,10 @@ import { ResponseMessage } from '../../common/decorators/response-message.decora
 import { Role } from '../../common/decorators/user-role.decorator';
 import { UserRole } from '../user/user.entity';
 import { CategoryCreateRequestDto } from './dtos/requests/category-create-request.dto';
-import { CategoryCreateResponseDto } from './dtos/responses/category-create-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { Category } from './category.entity';
-import { CategoryReadResponseDto } from './dtos/responses/category-read-response.dto';
 import { CategoryUpdateRequestDto } from './dtos/requests/category-update-request.dto';
+import { CategoryBaseResponseDto } from './dtos/responses/category-base-response.dto';
 
 @ApiTags('- Categories')
 @Controller('categories')
@@ -34,47 +34,47 @@ export class CategoryController {
     summary: '[Category] 생성',
   })
   @ApiBody({ type: CategoryCreateRequestDto })
-  @ApiOkResponse({ type: CategoryCreateResponseDto })
+  @ApiOkResponse({ type: CategoryBaseResponseDto })
   @ApiBearerAuth()
   @ResponseMessage('success.create')
   @Role(UserRole.ADMIN)
   @Post('create')
   async create(
     @Body() createReq: CategoryCreateRequestDto,
-  ): Promise<CategoryCreateResponseDto> {
+  ): Promise<CategoryBaseResponseDto> {
     const category: Promise<Category> = this.categoryService.create(createReq);
 
-    return plainToInstance(CategoryCreateResponseDto, category);
+    return plainToInstance(CategoryBaseResponseDto, category);
   }
 
   @ApiOperation({
     summary: '[Category] 전체 조회',
   })
-  @ApiOkResponse({ type: CategoryReadResponseDto, isArray: true })
+  @ApiOkResponse({ type: CategoryBaseResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
   @Get('retrieve')
-  async retrieve(): Promise<CategoryReadResponseDto[]> {
+  async retrieve(): Promise<CategoryBaseResponseDto[]> {
     const categories: Category[] = await this.categoryService.findAll();
 
-    return plainToInstance(CategoryReadResponseDto, categories);
+    return plainToInstance(CategoryBaseResponseDto, categories);
   }
 
   @ApiOperation({
     summary: '[Category] 갱신',
   })
   @ApiBody({ type: CategoryUpdateRequestDto })
-  @ApiOkResponse({ type: CategoryReadResponseDto })
+  @ApiOkResponse({ type: CategoryBaseResponseDto })
   @ApiBearerAuth()
   @ResponseMessage('success.update')
   @Role(UserRole.ADMIN)
   @Put('update')
   async update(
     @Body() updateReq: CategoryUpdateRequestDto,
-  ): Promise<CategoryReadResponseDto> {
+  ): Promise<CategoryBaseResponseDto> {
     const category: Promise<Category> = this.categoryService.update(updateReq);
 
-    return plainToInstance(CategoryReadResponseDto, category);
+    return plainToInstance(CategoryBaseResponseDto, category);
   }
 
   @ApiOperation({
@@ -84,7 +84,10 @@ export class CategoryController {
   @ResponseMessage('success.delete')
   @Role(UserRole.ADMIN)
   @Delete('delete/:id')
-  async delete(@Param('id') id: number, @Query('c') cascade: boolean): Promise<void> {
+  async delete(
+    @Param('id') id: number,
+    @Query('c') cascade: boolean,
+  ): Promise<void> {
     await this.categoryService.delete(id, cascade);
   }
 }

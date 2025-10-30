@@ -1,21 +1,18 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
 import { Account } from '../account/account.entity';
 import { Soobook } from '../../common/interfaces/soobook.entity';
 import { Category } from '../category/category.entity';
-
-export enum TransactionType {
-  INCOME = 'income',
-  EXPENSE = 'expense',
-  TRANSFER = 'transfer',
-}
+import { TransactionType } from './transaction-type.enum';
+import { Recurrence } from '../recurrence/recurrence.entity';
 
 @Entity()
 export class Transaction extends Soobook {
   @ManyToOne(() => User, (user) => user.transactions, {
     cascade: ['remove'],
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
@@ -23,23 +20,29 @@ export class Transaction extends Soobook {
   @ManyToOne(() => Account, (account) => account.transactions, {
     cascade: ['remove'],
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn({ name: 'account_id' })
   account: Account;
 
-  @ManyToOne(() => Category, (category) => category.transactions)
+  @ManyToOne(() => Category, (category) => category.transactions, {
+    nullable: false,
+  })
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  @OneToOne(() => Account, (account) => account.transfer)
+  @ManyToOne(() => Recurrence, (recurrence) => recurrence.transactions)
+  @JoinColumn({ name: 'recurrence_id' })
+  recurrence: Recurrence;
+
+  @ManyToOne(() => Account, (account) => account.transferTransactions)
   @JoinColumn({ name: 'to_account_id' })
   toAccount: Account;
 
   @Column('decimal', { precision: 15, scale: 2 })
   amount: Decimal;
 
-  @Column({
-    type: 'enum',
+  @Column('enum', {
     enum: TransactionType,
   })
   type: TransactionType;

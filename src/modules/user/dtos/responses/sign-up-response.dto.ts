@@ -1,28 +1,10 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Exclude } from 'class-transformer';
+import { SoobookDto } from '../../../../common/interfaces/soobook.dto';
 
-export class SignUpResponseDto {
-  @ApiProperty({
-    description: 'Email',
-  })
-  @Transform(({ obj }) => obj.email, { toClassOnly: true })
-  email: string;
+export class SignUpResponseDto extends SoobookDto {
+  @Exclude()
+  password: string;
 
-  @ApiProperty({
-    description: '핸드폰 번호 - 대한민국 기준',
-  })
-  @Transform(({ obj }) => obj.phoneNo, { toClassOnly: true })
-  phoneNo: string;
-
-  @ApiProperty({
-    description: '이름',
-  })
-  @Transform(({ obj }) => obj.name, { toClassOnly: true })
-  name: string;
-
-  @ApiProperty({
-    description: '닉네임',
-  })
-  @Transform(({ obj }) => obj.nickname, { toClassOnly: true })
-  nickname: string;
+  @Exclude()
+  tokenVersion: number;
 }

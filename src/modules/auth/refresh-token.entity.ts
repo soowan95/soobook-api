@@ -13,6 +13,7 @@ export class RefreshToken extends Soobook {
   @OneToOne(() => User, (user) => user.refreshToken, {
     cascade: ['remove'],
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn({ name: 'user_id' })
   user: User;

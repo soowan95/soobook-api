@@ -21,11 +21,9 @@ import { AccountCreateRequestDto } from './dtos/requests/account-create-request.
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import type { AuthRequest } from '../../common/interfaces/auth.request.interface';
 import { plainToInstance } from 'class-transformer';
-import { AccountCreateResponseDto } from './dtos/responses/account-create-response.dto';
 import { Account } from './account.entity';
 import { AccountUpdateRequestDto } from './dtos/requests/account-update-request.dto';
-import { AccountUpdateResponseDto } from './dtos/responses/account-update-response.dto';
-import { AccountReadResponseDto } from './dtos/responses/account-read-response.dto';
+import { AccountBaseResponseDto } from './dtos/responses/account-base-response.dto';
 
 @ApiTags('- Account')
 @Controller('account')
@@ -34,50 +32,50 @@ export class AccountController {
 
   @ApiOperation({ summary: '[Account] 생성' })
   @ApiBody({ type: AccountCreateRequestDto })
-  @ApiOkResponse({ type: AccountCreateResponseDto })
+  @ApiOkResponse({ type: AccountBaseResponseDto })
   @ApiBearerAuth()
   @ResponseMessage('success.create')
   @Post('create')
   async create(
     @Body() createReq: AccountCreateRequestDto,
     @Req() req: AuthRequest,
-  ): Promise<AccountCreateResponseDto> {
+  ): Promise<AccountBaseResponseDto> {
     const account: Promise<Account> = this.accountService.create(
       createReq,
       req.user,
     );
 
-    return plainToInstance(AccountCreateResponseDto, account);
+    return plainToInstance(AccountBaseResponseDto, account);
   }
 
   @ApiOperation({ summary: '[Account] 전체 조회 ' })
-  @ApiOkResponse({ type: AccountReadResponseDto, isArray: true })
+  @ApiOkResponse({ type: AccountBaseResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
   @Get('retrieve')
-  async retrieve(@Req() req: AuthRequest): Promise<AccountReadResponseDto[]> {
+  async retrieve(@Req() req: AuthRequest): Promise<AccountBaseResponseDto[]> {
     const accounts: Account[] = await this.accountService.findAllByUserId(
       req.user.id,
     );
 
-    return plainToInstance(AccountReadResponseDto, accounts);
+    return plainToInstance(AccountBaseResponseDto, accounts);
   }
 
   @ApiOperation({ summary: '[Account] 키워드를 통한 조회' })
-  @ApiOkResponse({ type: AccountReadResponseDto, isArray: true })
+  @ApiOkResponse({ type: AccountBaseResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
   @Get('show')
   async showByKeyword(
     @Query('k') keyword: string,
     @Req() req: AuthRequest,
-  ): Promise<AccountReadResponseDto[]> {
+  ): Promise<AccountBaseResponseDto[]> {
     const accounts: Account[] = await this.accountService.findAllByKeyword(
       keyword,
       req.user.id,
     );
 
-    return plainToInstance(AccountReadResponseDto, accounts);
+    return plainToInstance(AccountBaseResponseDto, accounts);
   }
 
   @ApiOperation({ summary: '[Account] 갱신' })
@@ -87,10 +85,10 @@ export class AccountController {
   @Put('update')
   async update(
     @Body() updateReq: AccountUpdateRequestDto,
-  ): Promise<AccountUpdateResponseDto> {
+  ): Promise<AccountBaseResponseDto> {
     const account: Promise<Account> = this.accountService.update(updateReq);
 
-    return plainToInstance(AccountUpdateResponseDto, account);
+    return plainToInstance(AccountBaseResponseDto, account);
   }
 
   @ApiOperation({ summary: '[Account] 삭제' })
