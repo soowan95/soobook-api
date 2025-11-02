@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Req } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -13,6 +13,7 @@ import { ResponseMessage } from '../../common/decorators/response-message.decora
 import { TransactionCreateRequestDto } from './dtos/requests/transaction-create-request.dto';
 import type { AuthRequest } from '../../common/interfaces/auth.request.interface';
 import { Transaction } from './transaction.entity';
+import { TransactionUpdateRequestDto } from './dtos/requests/transaction-update-request.dto';
 
 @ApiTags('- Transaction')
 @Controller('transaction')
@@ -67,6 +68,26 @@ export class TransactionController {
     const transaction: Promise<Transaction> = this.transactionService.create(
       createReq,
       req.user,
+    );
+
+    return plainToInstance(TransactionBaseResponseDto, transaction);
+  }
+
+  @ApiOperation({
+    summary: '[Transaction] 갱신',
+  })
+  @ApiBody({ type: TransactionUpdateRequestDto })
+  @ApiOkResponse({ type: TransactionBaseResponseDto })
+  @ApiBearerAuth()
+  @ResponseMessage('success.update')
+  @Put('update')
+  async update(
+    @Body() updateReq: TransactionUpdateRequestDto,
+    @Req() req: AuthRequest,
+  ): Promise<TransactionBaseResponseDto> {
+    const transaction: Promise<Transaction> = this.transactionService.update(
+      updateReq,
+      req.user.id,
     );
 
     return plainToInstance(TransactionBaseResponseDto, transaction);

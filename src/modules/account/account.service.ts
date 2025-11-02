@@ -82,13 +82,13 @@ export class AccountService {
         new Decimal(account.initialBalance),
       );
 
-      request.currentBalance = new Decimal(account.currentBalance)
-        .plus(difference);
+      request.currentBalance = new Decimal(account.currentBalance).plus(
+        difference,
+      );
     }
 
     account = this.accountRepository.merge(account, request);
-    await this.accountRepository.save(account);
-    return account;
+    return await this.accountRepository.save(account);
   }
 
   async delete(id: number): Promise<void> {
@@ -102,8 +102,13 @@ export class AccountService {
     if (!account) throw new NotFoundException('error.account.notFound');
 
     if (account.linkedCards.length > 0) {
-      const linkedCardIds: number[] = account.linkedCards.map((card) => card.id);
-      throw new ConflictException({message: 'warning.account.linkedCards', data: linkedCardIds});
+      const linkedCardIds: number[] = account.linkedCards.map(
+        (card) => card.id,
+      );
+      throw new ConflictException({
+        message: 'warning.account.linkedCards',
+        data: linkedCardIds,
+      });
     }
 
     await this.accountRepository.delete(id);

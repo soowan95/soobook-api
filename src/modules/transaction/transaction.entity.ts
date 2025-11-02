@@ -31,13 +31,15 @@ export class Transaction extends Soobook {
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  @ManyToOne(() => Recurrence, (recurrence) => recurrence.transactions)
+  @ManyToOne(() => Recurrence, (recurrence) => recurrence.transactions, {
+    onUpdate: 'NO ACTION',
+  })
   @JoinColumn({ name: 'recurrence_id' })
   recurrence: Recurrence;
 
   @ManyToOne(() => Account, (account) => account.transferTransactions)
   @JoinColumn({ name: 'to_account_id' })
-  toAccount: Account;
+  toAccount: Account | null;
 
   @Column('decimal', { precision: 15, scale: 2 })
   amount: Decimal;
