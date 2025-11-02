@@ -120,6 +120,11 @@ export class TransactionService {
       toAccount: updatedAccounts.toAccount,
       category: category ?? undefined,
     });
+
+    if (!updatedAccounts.toAccount) {
+      transaction.toAccount = null;
+    }
+
     return await this.transactionRepository.save(transaction);
   }
 
@@ -128,7 +133,7 @@ export class TransactionService {
     accountId: number,
     toAccountId: number | undefined,
     amount: Decimal,
-    isReset: boolean = false,
+    rollback: boolean = false,
   ): Promise<{ account: Account; toAccount: Account | null }> {
     await this.mandatoryTransfer(type, accountId, toAccountId);
     let account: Account = await this.accountService.findByIdOrThrow(accountId);
@@ -142,22 +147,22 @@ export class TransactionService {
 
     switch (type) {
       case 'income':
-        if (isReset)
+        if (rollback)
           await this.checkBalance(new Decimal(account.currentBalance), amount);
-        accountUpdateRequestDto.currentBalance = isReset
+        accountUpdateRequestDto.currentBalance = rollback
           ? new Decimal(account.currentBalance).minus(amount)
           : new Decimal(account.currentBalance).plus(amount);
         break;
       case 'expense':
-        if (!isReset)
+        if (!rollback)
           await this.checkBalance(new Decimal(account.currentBalance), amount);
-        accountUpdateRequestDto.currentBalance = isReset
+        accountUpdateRequestDto.currentBalance = rollback
           ? new Decimal(account.currentBalance).plus(amount)
           : new Decimal(account.currentBalance).minus(amount);
         break;
       case 'transfer':
         toAccount = await this.accountService.findByIdOrThrow(toAccountId!);
-        isReset
+        rollback
           ? await this.checkBalance(
               new Decimal(toAccount.currentBalance),
               amount,
@@ -166,11 +171,11 @@ export class TransactionService {
               new Decimal(account.currentBalance),
               amount,
             );
-        accountUpdateRequestDto.currentBalance = isReset
+        accountUpdateRequestDto.currentBalance = rollback
           ? new Decimal(account.currentBalance).plus(amount)
           : new Decimal(account.currentBalance).minus(amount);
         toAccountUpdateRequestDto.id = toAccountId!;
-        toAccountUpdateRequestDto.currentBalance = isReset
+        toAccountUpdateRequestDto.currentBalance = rollback
           ? new Decimal(toAccount.currentBalance).minus(amount)
           : new Decimal(toAccount.currentBalance).plus(amount);
         break;
