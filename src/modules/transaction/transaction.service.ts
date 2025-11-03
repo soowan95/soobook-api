@@ -93,31 +93,41 @@ export class TransactionService {
       throw new ForbiddenException('warning.transaction.forbidden');
     }
     let category: Category | null = null;
+    let updatedAccounts: {
+      account: Account | null;
+      toAccount: Account | null;
+    } = { account: null, toAccount: null };
 
     if (request.categoryId)
       category = await this.categoryService.findByIdOrThrow(request.categoryId);
 
-    await this.commit(
-      transaction.type,
-      transaction.account.id,
-      transaction.toAccount?.id,
-      transaction.amount,
-      true,
-    );
-    const updatedAccounts: { account: Account; toAccount: Account | null } =
+    if (
+      request.amount ||
+      request.accountId ||
+      request.toAccountId ||
+      request.type
+    ) {
       await this.commit(
+        transaction.type,
+        transaction.account.id,
+        transaction.toAccount?.id,
+        transaction.amount,
+        true,
+      );
+      updatedAccounts = await this.commit(
         request.type,
         request.accountId ?? transaction.account.id,
         request.toAccountId,
         request.amount,
       );
+    }
 
     if (request.type == TransactionType.TRANSFER)
-      request.location = `${updatedAccounts.account.name} -> ${updatedAccounts.toAccount!.name}`;
+      request.location = `${updatedAccounts.account!.name} -> ${updatedAccounts.toAccount!.name}`;
 
     transaction = this.transactionRepository.merge(transaction, {
       ...request,
-      account: updatedAccounts.account,
+      account: updatedAccounts.account ?? undefined,
       toAccount: updatedAccounts.toAccount,
       category: category ?? undefined,
     });
