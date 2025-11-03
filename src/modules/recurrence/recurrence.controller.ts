@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Req } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -65,12 +65,15 @@ export class RecurrenceController {
   @ApiOkResponse({ type: RecurrenceBaseResponseDto })
   @ApiBearerAuth()
   @ResponseMessage('success.update')
-  @Put('update')
+  @Put('update/:isCascade')
   async update(
     @Body() updateReq: RecurrenceUpdateRequestDto,
+    @Param('isCascade') isCascade: boolean | undefined,
   ): Promise<RecurrenceBaseResponseDto> {
-    const recurrence: Promise<Recurrence> =
-      this.recurrenceService.update(updateReq);
+    const recurrence: Promise<Recurrence> = this.recurrenceService.update(
+      updateReq,
+      isCascade,
+    );
 
     return plainToInstance(RecurrenceBaseResponseDto, recurrence);
   }

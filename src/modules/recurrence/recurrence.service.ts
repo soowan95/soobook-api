@@ -13,6 +13,8 @@ import { Account } from '../account/account.entity';
 import { RecurrenceUpdateRequestDto } from './dtos/requests/recurrence-update-request.dto';
 import { RecurrenceTerminateRequestDto } from './dtos/requests/recurrence-terminate-request.dto';
 import { startOfDay } from 'date-fns';
+import { TransactionUpdateRequestDto } from '../transaction/dtos/requests/transaction-update-request.dto';
+import { TransactionService } from '../transaction/transaction.service';
 
 @Injectable()
 export class RecurrenceService {
@@ -20,6 +22,7 @@ export class RecurrenceService {
     @Inject('RECURRENCE_REPOSITORY')
     private recurrenceRepository: Repository<Recurrence>,
     private readonly accountService: AccountService,
+    private readonly transactionService: TransactionService,
   ) {}
 
   async create(
@@ -74,10 +77,13 @@ export class RecurrenceService {
           }
           break;
         case true:
-          // TODO: TransactionService.update()
-          // for (const transaction of recurrence.transactions) {
-          // }
-          console.log('All transactions will be updated');
+          let transactionUpdateRequest: TransactionUpdateRequestDto =
+            new TransactionUpdateRequestDto();
+          transactionUpdateRequest.amount = request.amount;
+          await this.transactionService.update(
+            transactionUpdateRequest,
+            recurrence.user.id,
+          );
           break;
         case false:
           break;
