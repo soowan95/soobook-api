@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Between, Repository } from 'typeorm';
@@ -59,7 +60,7 @@ export class TransactionService {
     );
 
     const updatedAccounts: { account: Account; toAccount: Account | null } =
-      await this.updateAccounts(
+      await this.commit(
         request.type,
         request.accountId,
         request.toAccountId,
@@ -96,7 +97,7 @@ export class TransactionService {
     if (request.categoryId)
       category = await this.categoryService.findByIdOrThrow(request.categoryId);
 
-    await this.updateAccounts(
+    await this.commit(
       transaction.type,
       transaction.account.id,
       transaction.toAccount?.id,
@@ -104,7 +105,7 @@ export class TransactionService {
       true,
     );
     const updatedAccounts: { account: Account; toAccount: Account | null } =
-      await this.updateAccounts(
+      await this.commit(
         request.type,
         request.accountId ?? transaction.account.id,
         request.toAccountId,
@@ -128,7 +129,24 @@ export class TransactionService {
     return await this.transactionRepository.save(transaction);
   }
 
-  private async updateAccounts(
+  async delete(id: number): Promise<void> {
+    const transaction: Transaction = await this.findByIdOrThrow(id);
+    await this.commit(
+      transaction.type,
+      transaction.account.id,
+      transaction.toAccount?.id,
+      transaction.amount,
+      true,
+    )
+      .then(() => {
+        this.transactionRepository.delete({ id: id });
+      })
+      .catch((error) => {
+        throw new InternalServerErrorException(error);
+      });
+  }
+
+  private async commit(
     type: TransactionType,
     accountId: number,
     toAccountId: number | undefined,
