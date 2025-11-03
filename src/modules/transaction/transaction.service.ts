@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Between, Repository } from 'typeorm';
@@ -59,7 +60,7 @@ export class TransactionService {
     );
 
     const updatedAccounts: { account: Account; toAccount: Account | null } =
-      await this.updateAccounts(
+      await this.commit(
         request.type,
         request.accountId,
         request.toAccountId,
@@ -92,31 +93,41 @@ export class TransactionService {
       throw new ForbiddenException('warning.transaction.forbidden');
     }
     let category: Category | null = null;
+    let updatedAccounts: {
+      account: Account | null;
+      toAccount: Account | null;
+    } = { account: null, toAccount: null };
 
     if (request.categoryId)
       category = await this.categoryService.findByIdOrThrow(request.categoryId);
 
-    await this.updateAccounts(
-      transaction.type,
-      transaction.account.id,
-      transaction.toAccount?.id,
-      transaction.amount,
-      true,
-    );
-    const updatedAccounts: { account: Account; toAccount: Account | null } =
-      await this.updateAccounts(
+    if (
+      request.amount ||
+      request.accountId ||
+      request.toAccountId ||
+      request.type
+    ) {
+      await this.commit(
+        transaction.type,
+        transaction.account.id,
+        transaction.toAccount?.id,
+        transaction.amount,
+        true,
+      );
+      updatedAccounts = await this.commit(
         request.type,
         request.accountId ?? transaction.account.id,
         request.toAccountId,
         request.amount,
       );
+    }
 
     if (request.type == TransactionType.TRANSFER)
-      request.location = `${updatedAccounts.account.name} -> ${updatedAccounts.toAccount!.name}`;
+      request.location = `${updatedAccounts.account!.name} -> ${updatedAccounts.toAccount!.name}`;
 
     transaction = this.transactionRepository.merge(transaction, {
       ...request,
-      account: updatedAccounts.account,
+      account: updatedAccounts.account ?? undefined,
       toAccount: updatedAccounts.toAccount,
       category: category ?? undefined,
     });
@@ -128,7 +139,24 @@ export class TransactionService {
     return await this.transactionRepository.save(transaction);
   }
 
-  private async updateAccounts(
+  async delete(id: number): Promise<void> {
+    const transaction: Transaction = await this.findByIdOrThrow(id);
+    await this.commit(
+      transaction.type,
+      transaction.account.id,
+      transaction.toAccount?.id,
+      transaction.amount,
+      true,
+    )
+      .then(() => {
+        this.transactionRepository.delete({ id: id });
+      })
+      .catch((error) => {
+        throw new InternalServerErrorException(error);
+      });
+  }
+
+  private async commit(
     type: TransactionType,
     accountId: number,
     toAccountId: number | undefined,

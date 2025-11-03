@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Put, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -91,5 +100,15 @@ export class TransactionController {
     );
 
     return plainToInstance(TransactionBaseResponseDto, transaction);
+  }
+
+  @ApiOperation({
+    summary: '[Transaction] 삭제',
+  })
+  @ApiBearerAuth()
+  @ResponseMessage('success.delete')
+  @Delete('delete/:id')
+  async delete(@Param('id') id: number): Promise<void> {
+    await this.transactionService.delete(id);
   }
 }
