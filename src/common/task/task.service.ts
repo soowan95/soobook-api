@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { TransactionService } from '../../modules/transaction/transaction.service';
 import { RecurrenceService } from '../../modules/recurrence/recurrence.service';
 import { Recurrence } from '../../modules/recurrence/recurrence.entity';
@@ -14,8 +14,7 @@ export class TaskService {
 
   private readonly logger = new Logger(TaskService.name);
 
-  // @Cron(CronExpression.EVERY_DAY_AT_4AM)
-  @Cron('5 3 * * *')
+  @Cron(CronExpression.EVERY_DAY_AT_4AM)
   async createDailyTransaction() {
     this.logger.log('📲 Daily transaction creation started');
 
@@ -31,21 +30,23 @@ export class TaskService {
     let failCnt: number = 0;
 
     for (const recurrence of targetRecurrences) {
+      const { id, createdAt, updatedAt, updatedIp, ...rest } = recurrence;
       let transactionCreateRequest: TransactionCreateRequestDto = Object.assign(
         new TransactionCreateRequestDto(),
         {
-          ...recurrence,
-          categoryId: recurrence.category.id,
-          accountId: recurrence.account.id,
-          toAccount: recurrence.toAccount?.id,
+          ...rest,
+          categoryId: rest.category.id,
+          accountId: rest.account.id,
+          toAccountId: rest.toAccount?.id,
         },
       );
       await this.transactionService
-        .create(transactionCreateRequest, recurrence.user)
+        .create(transactionCreateRequest, recurrence.user, recurrence)
         .then(() => {
           successCnt++;
         })
-        .catch(() => {
+        .catch((error) => {
+          this.logger.error(`⚠️ Error transaction creation: ${error}`);
           failCnt++;
         });
     }

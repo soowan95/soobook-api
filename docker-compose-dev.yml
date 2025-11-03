@@ -2,6 +2,7 @@ services:
   mariadb-dev:
     image: mariadb:10.6
     environment:
+      TZ: Asia/Seoul
       MYSQL_ROOT_PASSWORD: qwer123
       MYSQL_DATABASE: soobook_dev
       MYSQL_USER: soobook_dev
@@ -23,6 +24,10 @@ services:
       - mariadb-dev
     env_file:
       - .env.dev
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
 volumes:
   mariadb_data:

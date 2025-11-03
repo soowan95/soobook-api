@@ -19,6 +19,7 @@ import { TransactionType } from './transaction-type.enum';
 import { CategoryService } from '../category/category.service';
 import { TransactionUpdateRequestDto } from './dtos/requests/transaction-update-request.dto';
 import { Category } from '../category/category.entity';
+import { Recurrence } from '../recurrence/recurrence.entity';
 
 @Injectable()
 export class TransactionService {
@@ -54,6 +55,7 @@ export class TransactionService {
   async create(
     request: TransactionCreateRequestDto,
     user: User,
+    recurrence: Recurrence | undefined = undefined,
   ): Promise<Transaction> {
     const category: Category = await this.categoryService.findByIdOrThrow(
       request.categoryId,
@@ -76,6 +78,7 @@ export class TransactionService {
       category: category,
       account: updatedAccounts.account,
       toAccount: updatedAccounts.toAccount ?? undefined,
+      recurrence: recurrence,
     });
 
     transaction = await this.transactionRepository.save(transaction);

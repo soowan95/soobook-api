@@ -35,6 +35,12 @@ export class RecurrenceService {
     const account: Account = await this.accountService.findByIdOrThrow(
       request.accountId,
     );
+    let toAccount: Account | null = null;
+    if (request.toAccountId) {
+      toAccount = await this.accountService.findByIdOrThrow(
+        request.toAccountId,
+      );
+    }
     const category: Category = await this.categoryService.findByIdOrThrow(
       request.categoryId,
     );
@@ -43,6 +49,7 @@ export class RecurrenceService {
       ...request,
       user: user,
       account: account,
+      toAccount: toAccount,
       category: category,
     });
   }
@@ -104,9 +111,15 @@ export class RecurrenceService {
     let recurrence: Recurrence = await this.findByIdOrThrow(request.id);
     await this.checkTransactions(request, recurrence);
     let account: Account | null = null;
+    let toAccount: Account | null = null;
     let category: Category | null = null;
     if (request.accountId) {
       account = await this.accountService.findByIdOrThrow(request.accountId);
+    }
+    if (request.toAccountId) {
+      toAccount = await this.accountService.findByIdOrThrow(
+        request.toAccountId,
+      );
     }
     if (request.categoryId) {
       category = await this.categoryService.findByIdOrThrow(request.categoryId);
@@ -136,8 +149,13 @@ export class RecurrenceService {
     recurrence = this.recurrenceRepository.merge(recurrence, {
       ...request,
       account: account ?? undefined,
+      toAccount: toAccount,
       category: category ?? undefined,
     });
+
+    if (!request.toAccountId && recurrence.toAccount) {
+      recurrence.toAccount = null;
+    }
 
     return await this.recurrenceRepository.save(recurrence);
   }
