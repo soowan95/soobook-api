@@ -5,10 +5,12 @@ import { AccountModule } from '../account/account.module';
 import { RecurrenceService } from './recurrence.service';
 import { RecurrenceController } from './recurrence.controller';
 import { TransactionModule } from '../transaction/transaction.module';
+import { CategoryModule } from '../category/category.module';
 
 @Module({
-  imports: [DatabaseModule, AccountModule, TransactionModule],
+  imports: [DatabaseModule, AccountModule, CategoryModule, TransactionModule],
   controllers: [RecurrenceController],
   providers: [...recurrenceProvider, RecurrenceService],
+  exports: [RecurrenceService],
 })
 export class RecurrenceModule {}

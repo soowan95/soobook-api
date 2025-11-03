@@ -5,6 +5,7 @@ import { Account } from '../account/account.entity';
 import Decimal from 'decimal.js';
 import { TransactionType } from '../transaction/transaction-type.enum';
 import { Transaction } from '../transaction/transaction.entity';
+import { Category } from '../category/category.entity';
 
 export enum RecurrencePeriodType {
   DAILY = 'daily',
@@ -30,11 +31,24 @@ export class Recurrence extends Soobook {
   @JoinColumn({ name: 'account_id' })
   account: Account;
 
+  @ManyToOne(() => Account, (account) => account.transferRecurrences)
+  @JoinColumn({ name: 'to_account_id' })
+  toAccount: Account | null;
+
+  @ManyToOne(() => Category, (category) => category.recurrences, {
+    nullable: false,
+  })
+  @JoinColumn({ name: 'category_id' })
+  category: Category;
+
   @OneToMany(() => Transaction, (transaction) => transaction.recurrence)
   transactions: Transaction[];
 
   @Column({ length: 30, nullable: true })
   description: string;
+
+  @Column()
+  location: string;
 
   @Column('decimal', { precision: 15, scale: 2 })
   amount: Decimal;

@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Soobook } from '../../common/interfaces/soobook.entity';
 import { Transaction } from '../transaction/transaction.entity';
+import { Recurrence } from '../recurrence/recurrence.entity';
 
 @Entity()
 export class Category extends Soobook {
@@ -19,4 +20,7 @@ export class Category extends Soobook {
 
   @OneToMany(() => Transaction, (transaction) => transaction.category)
   transactions: Transaction[];
+
+  @OneToMany(() => Recurrence, (recurrence) => recurrence.category)
+  recurrences: Recurrence[];
 }
