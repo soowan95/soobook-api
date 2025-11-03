@@ -17,6 +17,20 @@ export class RecurrenceUpdateRequestDto extends SoobookDto {
   accountId?: number;
 
   @ApiProperty({
+    description: '내 계좌 간 이동 시 수령 계좌 ID',
+    example: 2,
+  })
+  @IsOptionalNumber()
+  toAccountId?: number;
+
+  @ApiProperty({
+    description: '카테고리 ID',
+    example: 1,
+  })
+  @IsOptionalNumber()
+  categoryId?: number;
+
+  @ApiProperty({
     description: '금액',
     example: '50000',
   })
@@ -29,6 +43,13 @@ export class RecurrenceUpdateRequestDto extends SoobookDto {
   })
   @IsOptionalString()
   description?: string;
+
+  @ApiProperty({
+    description: '거래처',
+    example: '월급 통장',
+  })
+  @IsOptionalString()
+  location?: string;
 
   @ApiProperty({
     description: '거래 유형',

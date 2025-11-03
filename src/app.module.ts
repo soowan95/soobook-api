@@ -7,9 +7,12 @@ import { RequestContextMiddleware } from './common/middlewares/request-context.m
 import { AccountModule } from './modules/account/account.module';
 import { CategoryModule } from './modules/category/category.module';
 import { RecurrenceModule } from './modules/recurrence/recurrence.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TaskService } from './common/task/task.service';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     Argon2Module,
     AccountModule,
     AuthModule,
@@ -18,6 +21,7 @@ import { RecurrenceModule } from './modules/recurrence/recurrence.module';
     UserModule,
     TransactionModule,
   ],
+  providers: [TaskService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

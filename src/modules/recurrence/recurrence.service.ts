@@ -4,17 +4,19 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { Recurrence } from './recurrence.entity';
+import { MoreThanOrEqual, Repository } from 'typeorm';
+import { Recurrence, RecurrencePeriodType } from './recurrence.entity';
 import { RecurrenceCreateRequestDto } from './dtos/requests/recurrence-create-request.dto';
 import { User } from '../user/user.entity';
 import { AccountService } from '../account/account.service';
 import { Account } from '../account/account.entity';
 import { RecurrenceUpdateRequestDto } from './dtos/requests/recurrence-update-request.dto';
 import { RecurrenceTerminateRequestDto } from './dtos/requests/recurrence-terminate-request.dto';
-import { startOfDay } from 'date-fns';
+import { getDate, getDay, startOfDay } from 'date-fns';
 import { TransactionUpdateRequestDto } from '../transaction/dtos/requests/transaction-update-request.dto';
 import { TransactionService } from '../transaction/transaction.service';
+import { CategoryService } from '../category/category.service';
+import { Category } from '../category/category.entity';
 
 @Injectable()
 export class RecurrenceService {
@@ -22,6 +24,7 @@ export class RecurrenceService {
     @Inject('RECURRENCE_REPOSITORY')
     private recurrenceRepository: Repository<Recurrence>,
     private readonly accountService: AccountService,
+    private readonly categoryService: CategoryService,
     private readonly transactionService: TransactionService,
   ) {}
 
@@ -32,11 +35,15 @@ export class RecurrenceService {
     const account: Account = await this.accountService.findByIdOrThrow(
       request.accountId,
     );
+    const category: Category = await this.categoryService.findByIdOrThrow(
+      request.categoryId,
+    );
 
     return await this.recurrenceRepository.save({
       ...request,
       user: user,
       account: account,
+      category: category,
     });
   }
 
@@ -58,6 +65,38 @@ export class RecurrenceService {
     return recurrence;
   }
 
+  async getDailyTarget(): Promise<Recurrence[]> {
+    return this.recurrenceRepository.find({
+      where: {
+        periodType: RecurrencePeriodType.DAILY,
+        endDate: MoreThanOrEqual(startOfDay(new Date())),
+      },
+      relations: ['account', 'toAccount', 'category', 'user'],
+    });
+  }
+
+  async getWeeklyTarget(): Promise<Recurrence[]> {
+    return this.recurrenceRepository.find({
+      where: {
+        periodType: RecurrencePeriodType.WEEKLY,
+        executeDay: getDay(new Date()),
+        endDate: MoreThanOrEqual(startOfDay(new Date())),
+      },
+      relations: ['account', 'toAccount', 'category', 'user'],
+    });
+  }
+
+  async getMonthlyTarget(): Promise<Recurrence[]> {
+    return this.recurrenceRepository.find({
+      where: {
+        periodType: RecurrencePeriodType.MONTHLY,
+        executeDay: getDate(new Date()),
+        endDate: MoreThanOrEqual(startOfDay(new Date())),
+      },
+      relations: ['account', 'toAccount', 'category', 'user'],
+    });
+  }
+
   async update(
     request: RecurrenceUpdateRequestDto,
     isCascade: boolean | undefined = undefined,
@@ -65,8 +104,12 @@ export class RecurrenceService {
     let recurrence: Recurrence = await this.findByIdOrThrow(request.id);
     await this.checkTransactions(request, recurrence);
     let account: Account | null = null;
+    let category: Category | null = null;
     if (request.accountId) {
       account = await this.accountService.findByIdOrThrow(request.accountId);
+    }
+    if (request.categoryId) {
+      category = await this.categoryService.findByIdOrThrow(request.categoryId);
     }
 
     if (request.amount) {
@@ -93,6 +136,7 @@ export class RecurrenceService {
     recurrence = this.recurrenceRepository.merge(recurrence, {
       ...request,
       account: account ?? undefined,
+      category: category ?? undefined,
     });
 
     return await this.recurrenceRepository.save(recurrence);

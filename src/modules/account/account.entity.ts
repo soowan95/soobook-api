@@ -78,4 +78,7 @@ export class Account extends Soobook {
 
   @OneToMany(() => Recurrence, (recurrence) => recurrence.account)
   recurrences: Recurrence[];
+
+  @OneToMany(() => Recurrence, (recurrence) => recurrence.toAccount)
+  transferRecurrences: Recurrence[];
 }
