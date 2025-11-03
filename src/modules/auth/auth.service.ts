@@ -35,9 +35,19 @@ export class AuthService {
   ): Promise<{ user: User; accessToken: string; refreshToken: string }> {
     const loginUser: User = await this.userService
       .findByEmailOrThrow(email)
-      .catch((_: any): never => {
+      .catch(() => {
         throw new UnauthorizedException('error.invalid.credentials');
       });
+
+    const rtkCnt: number = await this.refreshTokenRepository.count({
+      where: {
+        user: { id: loginUser.id },
+      },
+    });
+
+    if (rtkCnt > 0) {
+      throw new UnauthorizedException('warning.duplicate.credentials');
+    }
 
     const isValid: boolean = await this.argon2Serivce.verifyPassword(
       loginUser.password,
@@ -99,7 +109,7 @@ export class AuthService {
   async refreshATK(email: string, rtk: string): Promise<string> {
     const user: User = await this.userService
       .findByEmailOrThrow(email, true)
-      .catch((_: any): never => {
+      .catch(() => {
         throw new UnauthorizedException('error.invalid.credentials');
       });
 
