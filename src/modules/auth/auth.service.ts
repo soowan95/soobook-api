@@ -134,6 +134,7 @@ export class AuthService {
       throw new UnauthorizedException('error.rtk.credentials');
     }
     if (user.refreshToken.expiresAt < new Date()) {
+      await this.signOut(user);
       throw new HttpException('error.rtk.expire', 419);
     }
   }
