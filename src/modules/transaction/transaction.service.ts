@@ -6,7 +6,11 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Between, Repository } from 'typeorm';
+import {
+  Between,
+  OptimisticLockVersionMismatchError,
+  Repository,
+} from 'typeorm';
 import { Transaction } from './transaction.entity';
 import { endOfDay, endOfMonth, startOfDay, startOfMonth } from 'date-fns';
 import { TransactionCreateRequestDto } from './dtos/requests/transaction-create-request.dto';
@@ -20,6 +24,7 @@ import { CategoryService } from '../category/category.service';
 import { TransactionUpdateRequestDto } from './dtos/requests/transaction-update-request.dto';
 import { Category } from '../category/category.entity';
 import { Recurrence } from '../recurrence/recurrence.entity';
+import { Recursion } from '../../common/decorators/recursion.decorator';
 
 @Injectable()
 export class TransactionService {
@@ -159,6 +164,7 @@ export class TransactionService {
       });
   }
 
+  @Recursion(3, OptimisticLockVersionMismatchError)
   private async commit(
     type: TransactionType,
     accountId: number,
@@ -227,7 +233,7 @@ export class TransactionService {
         where: {
           id: id,
         },
-        relations: ['account', 'toAccount', 'user'],
+        relations: ['account', 'toAccount', 'category', 'user'],
       });
     if (!transaction) throw new NotFoundException('error.transaction.notFound');
     return transaction;

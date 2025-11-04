@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  VersionColumn,
+} from 'typeorm';
 import { User } from '../user/user.entity';
 import Decimal from 'decimal.js';
 import { Transaction } from '../transaction/transaction.entity';
@@ -62,6 +69,9 @@ export class Account extends Soobook {
 
   @Column('decimal', { name: 'current_balance', precision: 15, scale: 2 })
   currentBalance: Decimal;
+
+  @VersionColumn()
+  version: number;
 
   @ManyToOne(() => Account, (account) => account.linkedCards)
   @JoinColumn({ name: 'linked_account_id' })
