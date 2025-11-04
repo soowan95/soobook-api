@@ -72,35 +72,50 @@ export class RecurrenceService {
     return recurrence;
   }
 
-  async getDailyTarget(): Promise<Recurrence[]> {
+  async getDailyTarget(
+    after: number = 0,
+    relations: string[] = [],
+  ): Promise<Recurrence[]> {
+    const targetDate: Date = new Date();
+    targetDate.setDate(targetDate.getDate() + after);
     return this.recurrenceRepository.find({
       where: {
         periodType: RecurrencePeriodType.DAILY,
-        endDate: MoreThanOrEqual(startOfDay(new Date())),
+        endDate: MoreThanOrEqual(startOfDay(targetDate)),
       },
-      relations: ['account', 'toAccount', 'category', 'user'],
+      relations: relations,
     });
   }
 
-  async getWeeklyTarget(): Promise<Recurrence[]> {
+  async getWeeklyTarget(
+    after: number = 0,
+    relations: string[] = [],
+  ): Promise<Recurrence[]> {
+    const targetDate: Date = new Date();
+    targetDate.setDate(targetDate.getDate() + after);
     return this.recurrenceRepository.find({
       where: {
         periodType: RecurrencePeriodType.WEEKLY,
-        executeDay: getDay(new Date()),
-        endDate: MoreThanOrEqual(startOfDay(new Date())),
+        executeDay: getDay(targetDate),
+        endDate: MoreThanOrEqual(startOfDay(targetDate)),
       },
-      relations: ['account', 'toAccount', 'category', 'user'],
+      relations: relations,
     });
   }
 
-  async getMonthlyTarget(): Promise<Recurrence[]> {
+  async getMonthlyTarget(
+    after: number = 0,
+    relations: string[] = [],
+  ): Promise<Recurrence[]> {
+    const targetDate: Date = new Date();
+    targetDate.setDate(targetDate.getDate() + after);
     return this.recurrenceRepository.find({
       where: {
         periodType: RecurrencePeriodType.MONTHLY,
-        executeDay: getDate(new Date()),
-        endDate: MoreThanOrEqual(startOfDay(new Date())),
+        executeDay: getDate(targetDate),
+        endDate: MoreThanOrEqual(startOfDay(targetDate)),
       },
-      relations: ['account', 'toAccount', 'category', 'user'],
+      relations: relations,
     });
   }
 
