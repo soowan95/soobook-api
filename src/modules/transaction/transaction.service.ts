@@ -12,7 +12,13 @@ import {
   Repository,
 } from 'typeorm';
 import { Transaction } from './transaction.entity';
-import { endOfDay, endOfMonth, startOfDay, startOfMonth } from 'date-fns';
+import {
+  endOfDay,
+  endOfMonth,
+  parse,
+  startOfDay,
+  startOfMonth,
+} from 'date-fns';
 import { TransactionCreateRequestDto } from './dtos/requests/transaction-create-request.dto';
 import { User } from '../user/user.entity';
 import { AccountService } from '../account/account.service';
@@ -35,8 +41,11 @@ export class TransactionService {
     private readonly categoryService: CategoryService,
   ) {}
 
-  async showDaily(userId: number): Promise<Transaction[]> {
-    const today = new Date();
+  async showDaily(
+    userId: number,
+    date: string | undefined,
+  ): Promise<Transaction[]> {
+    const today: Date = date ? parse(date, 'yyyyMMdd', new Date()) : new Date();
     return await this.transactionRepository.find({
       where: {
         user: { id: userId },
@@ -46,8 +55,11 @@ export class TransactionService {
     });
   }
 
-  async showMonthly(userId: number): Promise<Transaction[]> {
-    const today = new Date();
+  async showMonthly(
+    userId: number,
+    date: string | undefined,
+  ): Promise<Transaction[]> {
+    const today: Date = date ? parse(date, 'yyyyMMdd', new Date()) : new Date();
     return await this.transactionRepository.find({
       where: {
         user: { id: userId },

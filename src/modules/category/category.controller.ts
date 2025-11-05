@@ -13,6 +13,8 @@ import {
   ApiBody,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { CategoryService } from './category.service';
@@ -81,12 +83,14 @@ export class CategoryController {
     summary: '[Category] 삭제',
   })
   @ApiBearerAuth()
+  @ApiQuery({ name: 'c', required: false })
+  @ApiParam({ name: 'id', required: true })
   @ResponseMessage('success.delete')
   @Role(UserRole.ADMIN)
   @Delete('delete/:id')
   async delete(
     @Param('id') id: number,
-    @Query('c') cascade: boolean,
+    @Query('c') cascade: boolean = false,
   ): Promise<void> {
     await this.categoryService.delete(id, cascade);
   }
