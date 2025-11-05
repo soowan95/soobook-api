@@ -5,6 +5,7 @@ import { RecurrenceService } from '../../modules/recurrence/recurrence.service';
 import { Recurrence } from '../../modules/recurrence/recurrence.entity';
 import { TransactionCreateRequestDto } from '../../modules/transaction/dtos/requests/transaction-create-request.dto';
 import { TransactionType } from '../../modules/transaction/transaction-type.enum';
+import { OptimisticLockVersionMismatchError } from 'typeorm';
 
 @Injectable()
 export class TaskService {
@@ -69,6 +70,13 @@ export class TaskService {
         .catch((error) => {
           this.logger.error(`⚠️ Error transaction creation: ${error}`);
           failCnt++;
+          if (error instanceof OptimisticLockVersionMismatchError) {
+            // TODO: Send notification
+            this.logger.log('> Concurrent transaction');
+          } else {
+            // TODO: Send notification
+            this.logger.log('> Unknown error');
+          }
         });
     }
 
