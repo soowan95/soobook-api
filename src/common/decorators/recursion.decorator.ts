@@ -1,7 +1,5 @@
-const MAX_RECURSION_DEPTH = 3;
-
 export function Recursion(
-  depth: number = MAX_RECURSION_DEPTH,
+  depth: number,
   ErrorType: new (...args: any[]) => Error,
 ) {
   return function (
@@ -15,16 +13,14 @@ export function Recursion(
       let attempts = 0;
 
       while (attempts < depth) {
-        attempts++;
         try {
           return await originalMethod.apply(this, args);
         } catch (e) {
           if (e instanceof ErrorType) {
+            attempts++;
             if (attempts === depth) {
               throw e;
             }
-            console.log(`Recursion depth reached. Retrying...`);
-            console.log(`Error: ${e.message}`);
             continue;
           }
           throw e;
