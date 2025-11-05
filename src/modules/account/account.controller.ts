@@ -4,6 +4,8 @@ import {
   ApiBody,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import {
@@ -62,6 +64,7 @@ export class AccountController {
   }
 
   @ApiOperation({ summary: '[Account] 키워드를 통한 조회' })
+  @ApiQuery({ name: 'k', required: true })
   @ApiOkResponse({ type: AccountBaseResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
@@ -92,6 +95,7 @@ export class AccountController {
   }
 
   @ApiOperation({ summary: '[Account] 삭제' })
+  @ApiParam({ name: 'id', required: true })
   @ApiBearerAuth()
   @ResponseMessage('success.delete')
   @Delete('delete/:id')

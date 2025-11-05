@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
 } from '@nestjs/common';
 import {
@@ -13,6 +14,7 @@ import {
   ApiBody,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { TransactionService } from './transaction.service';
@@ -32,15 +34,18 @@ export class TransactionController {
   @ApiOperation({
     summary: '[Transaction] 일일 조회',
   })
+  @ApiQuery({ name: 'd', required: false })
   @ApiOkResponse({ type: TransactionBaseResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
   @Get('daily')
   async showDaily(
     @Req() req: AuthRequest,
+    @Query('d') date: string | undefined,
   ): Promise<TransactionBaseResponseDto[]> {
     const transactions: Transaction[] = await this.transactionService.showDaily(
       req.user.id,
+      date,
     );
 
     return plainToInstance(TransactionBaseResponseDto, transactions);
@@ -49,15 +54,17 @@ export class TransactionController {
   @ApiOperation({
     summary: '[Transaction] 월별 조회',
   })
+  @ApiQuery({ name: 'd', required: false })
   @ApiOkResponse({ type: TransactionBaseResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
   @Get('monthly')
   async showMonthly(
     @Req() req: AuthRequest,
+    @Query('d') date: string | undefined,
   ): Promise<TransactionBaseResponseDto[]> {
     const transactions: Transaction[] =
-      await this.transactionService.showMonthly(req.user.id);
+      await this.transactionService.showMonthly(req.user.id, date);
 
     return plainToInstance(TransactionBaseResponseDto, transactions);
   }

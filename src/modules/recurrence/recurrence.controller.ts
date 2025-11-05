@@ -4,6 +4,7 @@ import {
   ApiBody,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { RecurrenceService } from './recurrence.service';
@@ -62,6 +63,7 @@ export class RecurrenceController {
     summary: '[Recurrence] 갱신',
   })
   @ApiBody({ type: RecurrenceUpdateRequestDto })
+  @ApiParam({ name: 'isCascade', required: false })
   @ApiOkResponse({ type: RecurrenceBaseResponseDto })
   @ApiBearerAuth()
   @ResponseMessage('success.update')
