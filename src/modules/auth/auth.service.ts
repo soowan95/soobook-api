@@ -8,7 +8,7 @@ import {
 import { Argon2Service } from '../../helper/argon2/argon2.service';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
-import { User } from '../user/user.entity';
+import { User, UserRole } from '../user/user.entity';
 import { Repository } from 'typeorm';
 import { RefreshToken } from './refresh-token.entity';
 import * as dotenv from 'dotenv';
@@ -16,6 +16,11 @@ import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { SignUpRequestDto } from '../user/dtos/requests/sign-up-request.dto';
+import { AccountService } from '../account/account.service';
+import { AccountCreateRequestDto } from '../account/dtos/requests/account-create-request.dto';
+import { AccountType } from '../account/account.entity';
+import Decimal from 'decimal.js';
+import { addDays, addMonths, addWeeks, addYears } from 'date-fns';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || `dev`}` });
 
@@ -24,8 +29,9 @@ export class AuthService {
   constructor(
     @Inject('REFRESH_TOKEN_REPOSITORY')
     private refreshTokenRepository: Repository<RefreshToken>,
-    private readonly argon2Serivce: Argon2Service,
+    private readonly argon2Service: Argon2Service,
     private readonly jwtService: JwtService,
+    private readonly accountService: AccountService,
     private readonly userService: UserService,
   ) {}
 
@@ -49,7 +55,7 @@ export class AuthService {
       throw new UnauthorizedException('warning.duplicate.credentials');
     }
 
-    const isValid: boolean = await this.argon2Serivce.verifyPassword(
+    const isValid: boolean = await this.argon2Service.verifyPassword(
       loginUser.password,
       password,
     );
@@ -70,7 +76,18 @@ export class AuthService {
     );
     guestRequest.isGuest = true;
 
-    return await this.userService.signUp(guestRequest);
+    const guest: User = await this.userService.signUp(guestRequest);
+
+    const accountCreateRequest: AccountCreateRequestDto =
+      new AccountCreateRequestDto();
+    accountCreateRequest.name = '현금';
+    accountCreateRequest.type = AccountType.CASH;
+    accountCreateRequest.initialBalance = new Decimal(0);
+    accountCreateRequest.isActive = true;
+
+    await this.accountService.create(accountCreateRequest, guest);
+
+    return guest;
   }
 
   async guestSingIn(guest: User): Promise<{
@@ -121,9 +138,19 @@ export class AuthService {
       tokenVersion: user.tokenVersion,
     };
 
-    return await this.jwtService.signAsync(payload, {
+    const atk: string = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_ACCESS_SECRET,
     });
+
+    const refreshToken: RefreshToken = user.refreshToken;
+    refreshToken.expiresAt = await this.calculateExpiresAt(
+      user.role === UserRole.GUEST
+        ? '1m'
+        : String(process.env.REFRESH_TOKEN_EXPIRES),
+    );
+    await this.refreshTokenRepository.save(refreshToken);
+
+    return atk;
   }
 
   async generateRTK(user: User, isGuest: boolean = false): Promise<string> {
@@ -150,26 +177,26 @@ export class AuthService {
   }
 
   private async calculateExpiresAt(expires: string): Promise<Date> {
-    const expNumber: number = Number(expires.substring(0, expires.length - 1));
+    let expNumber: number = Number(expires.substring(0, expires.length - 1));
+    let expiresAt: Date | undefined = undefined;
     if (isNaN(expNumber)) {
       throw new InternalServerErrorException('error.rtk.wrongType');
     }
     const expType: string = expires.substring(expires.length - 1);
-    let calExpires: number = 24 * 60 * 60 * 1000;
     switch (expType) {
       case 'd':
-        calExpires *= expNumber;
+        expiresAt = addDays(new Date(), expNumber);
         break;
       case 'w':
-        calExpires *= expNumber * 7;
+        expiresAt = addWeeks(new Date(), expNumber);
         break;
       case 'm':
-        calExpires *= expNumber * 30;
+        expiresAt = addMonths(new Date(), expNumber);
         break;
       case 'y':
-        calExpires *= expNumber * 365;
+        expiresAt = addYears(new Date(), expNumber);
         break;
     }
-    return new Date(Date.now() + calExpires);
+    return expiresAt ?? new Date();
   }
 }

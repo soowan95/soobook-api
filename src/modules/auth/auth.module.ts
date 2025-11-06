@@ -7,9 +7,10 @@ import { UserModule } from '../user/user.module';
 import { refreshTokenProvider } from './refresh-token-provider';
 import { DatabaseModule } from '../../database/database.module';
 import { userProvider } from '../user/user-provider';
+import { AccountModule } from '../account/account.module';
 
 @Module({
-  imports: [DatabaseModule, UserModule, JwtModule.register({})],
+  imports: [DatabaseModule, AccountModule, UserModule, JwtModule.register({})],
   controllers: [AuthController],
   providers: [
     ...refreshTokenProvider,
