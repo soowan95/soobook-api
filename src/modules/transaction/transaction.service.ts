@@ -90,6 +90,7 @@ export class TransactionService {
   ): Promise<TransactionMonthlyBriefResponseDto> {
     const where: any = {
       user: { id: userId },
+      createdAt: Between(startOfMonth(new Date()), endOfMonth(new Date())),
     };
     if (accountId) {
       where['account'] = { id: accountId };
