@@ -45,14 +45,18 @@ export class AuthService {
         throw new UnauthorizedException('error.invalid.credentials');
       });
 
-    const rtkCnt: number = await this.refreshTokenRepository.count({
+    const rtk: RefreshToken | null = await this.refreshTokenRepository.findOne({
       where: {
         user: { id: loginUser.id },
       },
     });
 
-    if (rtkCnt > 0) {
-      throw new UnauthorizedException('warning.duplicate.credentials');
+    if (rtk) {
+      if (rtk.expiresAt >= new Date()) {
+        throw new UnauthorizedException('warning.duplicate.credentials');
+      } else {
+        await this.refreshTokenRepository.delete(rtk.id);
+      }
     }
 
     const isValid: boolean = await this.argon2Service.verifyPassword(
