@@ -64,13 +64,13 @@ export class AccountController {
   }
 
   @ApiOperation({ summary: '[Account] 키워드를 통한 조회' })
-  @ApiQuery({ name: 'k', required: true })
+  @ApiQuery({ name: 'keyword', required: true })
   @ApiOkResponse({ type: AccountBaseResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
   @Get('show')
   async showByKeyword(
-    @Query('k') keyword: string,
+    @Query('keyword') keyword: string,
     @Req() req: AuthRequest,
   ): Promise<AccountBaseResponseDto[]> {
     const accounts: Account[] = await this.accountService.findAllByKeyword(
