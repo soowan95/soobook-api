@@ -10,6 +10,7 @@ import { AccountCreateRequestDto } from './dtos/requests/account-create-request.
 import { User } from '../user/user.entity';
 import { AccountUpdateRequestDto } from './dtos/requests/account-update-request.dto';
 import Decimal from 'decimal.js';
+import { AccountTotalCurrentBalanceResponse } from './dtos/responses/account-total-current-balance-response.dto';
 
 @Injectable()
 export class AccountService {
@@ -68,6 +69,23 @@ export class AccountService {
 
     await this.accountRepository.save(account);
     return account;
+  }
+
+  async getTotalCurrentBalance(
+    userId: number,
+  ): Promise<AccountTotalCurrentBalanceResponse> {
+    let accounts: Account[] = await this.accountRepository.find({
+      where: {
+        user: { id: userId },
+      },
+    });
+
+    return new AccountTotalCurrentBalanceResponse(
+      accounts.reduce(
+        (sum: Decimal, a) => sum.plus(new Decimal(a.currentBalance)),
+        new Decimal(0),
+      ),
+    );
   }
 
   async update(request: AccountUpdateRequestDto): Promise<Account> {

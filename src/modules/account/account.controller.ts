@@ -26,6 +26,7 @@ import { plainToInstance } from 'class-transformer';
 import { Account } from './account.entity';
 import { AccountUpdateRequestDto } from './dtos/requests/account-update-request.dto';
 import { AccountBaseResponseDto } from './dtos/responses/account-base-response.dto';
+import { AccountTotalCurrentBalanceResponse } from './dtos/responses/account-total-current-balance-response.dto';
 
 @ApiTags('- Account')
 @Controller('account')
@@ -79,6 +80,17 @@ export class AccountController {
     );
 
     return plainToInstance(AccountBaseResponseDto, accounts);
+  }
+
+  @ApiOperation({ summary: '[Account] 모든 계좌의 총 잔액 조회' })
+  @ApiOkResponse({ type: AccountTotalCurrentBalanceResponse })
+  @ApiBearerAuth()
+  @ResponseMessage('success.read')
+  @Get('show/total-current-balance')
+  async showTotalCurrentBalance(
+    @Req() req: AuthRequest,
+  ): Promise<AccountTotalCurrentBalanceResponse> {
+    return await this.accountService.getTotalCurrentBalance(req.user.id);
   }
 
   @ApiOperation({ summary: '[Account] 갱신' })

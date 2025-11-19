@@ -25,7 +25,7 @@ import { TransactionCreateRequestDto } from './dtos/requests/transaction-create-
 import type { AuthRequest } from '../../common/interfaces/auth.request.interface';
 import { Transaction } from './transaction.entity';
 import { TransactionUpdateRequestDto } from './dtos/requests/transaction-update-request.dto';
-import { TransactionMonthlyBriefResponseDto } from './dtos/responses/transaction-monthly-brief-response-dto';
+import { TransactionMonthlyBriefResponseDto } from './dtos/responses/transaction-monthly-brief-response.dto';
 
 @ApiTags('- Transaction')
 @Controller('transaction')
