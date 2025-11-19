@@ -31,6 +31,7 @@ import { TransactionUpdateRequestDto } from './dtos/requests/transaction-update-
 import { Category } from '../category/category.entity';
 import { Recurrence } from '../recurrence/recurrence.entity';
 import { Recursion } from '../../common/decorators/recursion.decorator';
+import { TransactionMonthlyBriefResponseDto } from './dtos/responses/transaction-monthly-brief-response-dto';
 
 @Injectable()
 export class TransactionService {
@@ -43,30 +44,65 @@ export class TransactionService {
 
   async showDaily(
     userId: number,
-    date: string | undefined,
+    createdAt: string | undefined,
+    accountId: number | undefined,
   ): Promise<Transaction[]> {
-    const today: Date = date ? parse(date, 'yyyyMMdd', new Date()) : new Date();
+    const today: Date = createdAt
+      ? parse(createdAt, 'yyyyMMdd', new Date())
+      : new Date();
+    const where: any = {
+      user: { id: userId },
+      createdAt: Between(startOfDay(today), endOfDay(today)),
+    };
+    if (accountId) {
+      where['account'] = { id: accountId };
+    }
     return await this.transactionRepository.find({
-      where: {
-        user: { id: userId },
-        createdAt: Between(startOfDay(today), endOfDay(today)),
-      },
+      where: where,
       relations: ['account', 'toAccount', 'category', 'recurrence'],
     });
   }
 
   async showMonthly(
     userId: number,
-    date: string | undefined,
+    createdAt: string | undefined,
+    accountId: number | undefined,
   ): Promise<Transaction[]> {
-    const today: Date = date ? parse(date, 'yyyyMMdd', new Date()) : new Date();
+    const today: Date = createdAt
+      ? parse(createdAt, 'yyyyMMdd', new Date())
+      : new Date();
+    const where: any = {
+      user: { id: userId },
+      createdAt: Between(startOfMonth(today), endOfMonth(today)),
+    };
+    if (accountId) {
+      where['account'] = { id: accountId };
+    }
     return await this.transactionRepository.find({
-      where: {
-        user: { id: userId },
-        createdAt: Between(startOfMonth(today), endOfMonth(today)),
-      },
+      where: where,
       relations: ['account', 'toAccount', 'category', 'recurrence'],
     });
+  }
+
+  async showMonthlyBrief(
+    userId: number,
+    accountId: number | undefined,
+  ): Promise<TransactionMonthlyBriefResponseDto> {
+    const where: any = {
+      user: { id: userId },
+    };
+    if (accountId) {
+      where['account'] = { id: accountId };
+    }
+
+    let transactions: Transaction[] = await this.transactionRepository.find({
+      where: where,
+    });
+
+    return new TransactionMonthlyBriefResponseDto(
+      await this.sumAmountByType(transactions, TransactionType.INCOME),
+      await this.sumAmountByType(transactions, TransactionType.EXPENSE),
+    );
   }
 
   async create(
@@ -296,5 +332,17 @@ export class TransactionService {
     if (currentBalance.minus(amount).lt(0)) {
       throw new BadRequestException('error.transaction.insufficient.balance');
     }
+  }
+
+  private async sumAmountByType(
+    transactions: Transaction[],
+    type: TransactionType,
+  ): Promise<Decimal> {
+    return transactions
+      .filter((t) => t.type == type)
+      .reduce(
+        (sum: Decimal, t) => sum.plus(new Decimal(t.amount)),
+        new Decimal(0),
+      );
   }
 }

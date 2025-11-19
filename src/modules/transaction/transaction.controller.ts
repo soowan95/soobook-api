@@ -25,6 +25,7 @@ import { TransactionCreateRequestDto } from './dtos/requests/transaction-create-
 import type { AuthRequest } from '../../common/interfaces/auth.request.interface';
 import { Transaction } from './transaction.entity';
 import { TransactionUpdateRequestDto } from './dtos/requests/transaction-update-request.dto';
+import { TransactionMonthlyBriefResponseDto } from './dtos/responses/transaction-monthly-brief-response-dto';
 
 @ApiTags('- Transaction')
 @Controller('transaction')
@@ -34,18 +35,21 @@ export class TransactionController {
   @ApiOperation({
     summary: '[Transaction] 일일 조회',
   })
-  @ApiQuery({ name: 'd', required: false })
+  @ApiQuery({ name: 'createdAt', required: false })
+  @ApiQuery({ name: 'accountId', required: false })
   @ApiOkResponse({ type: TransactionBaseResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
   @Get('daily')
   async showDaily(
     @Req() req: AuthRequest,
-    @Query('d') date: string | undefined,
+    @Query('createdAt') createdAt: string | undefined,
+    @Query('accountId') accountId: number | undefined,
   ): Promise<TransactionBaseResponseDto[]> {
     const transactions: Transaction[] = await this.transactionService.showDaily(
       req.user.id,
-      date,
+      createdAt,
+      accountId,
     );
 
     return plainToInstance(TransactionBaseResponseDto, transactions);
@@ -54,19 +58,43 @@ export class TransactionController {
   @ApiOperation({
     summary: '[Transaction] 월별 조회',
   })
-  @ApiQuery({ name: 'd', required: false })
+  @ApiQuery({ name: 'createdAt', required: false })
+  @ApiQuery({ name: 'accountId', required: false })
   @ApiOkResponse({ type: TransactionBaseResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
   @Get('monthly')
   async showMonthly(
     @Req() req: AuthRequest,
-    @Query('d') date: string | undefined,
+    @Query('createdAt') createdAt: string | undefined,
+    @Query('accountId') accountId: number | undefined,
   ): Promise<TransactionBaseResponseDto[]> {
     const transactions: Transaction[] =
-      await this.transactionService.showMonthly(req.user.id, date);
+      await this.transactionService.showMonthly(
+        req.user.id,
+        createdAt,
+        accountId,
+      );
 
     return plainToInstance(TransactionBaseResponseDto, transactions);
+  }
+
+  @ApiOperation({
+    summary: '[Transaction] 당월 수입, 지출 총합 조회',
+  })
+  @ApiQuery({ name: 'accountId', required: false })
+  @ApiOkResponse({ type: TransactionMonthlyBriefResponseDto })
+  @ApiBearerAuth()
+  @ResponseMessage('success.read')
+  @Get('monthly/brief')
+  async showMonthlyBrief(
+    @Req() req: AuthRequest,
+    @Query('accountId') accountId: number | undefined,
+  ): Promise<TransactionMonthlyBriefResponseDto> {
+    return await this.transactionService.showMonthlyBrief(
+      req.user.id,
+      accountId,
+    );
   }
 
   @ApiOperation({
