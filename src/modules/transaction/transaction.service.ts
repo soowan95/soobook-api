@@ -31,7 +31,7 @@ import { TransactionUpdateRequestDto } from './dtos/requests/transaction-update-
 import { Category } from '../category/category.entity';
 import { Recurrence } from '../recurrence/recurrence.entity';
 import { Recursion } from '../../common/decorators/recursion.decorator';
-import { TransactionMonthlyBriefResponseDto } from './dtos/responses/transaction-monthly-brief-response-dto';
+import { TransactionMonthlyBriefResponseDto } from './dtos/responses/transaction-monthly-brief-response.dto';
 
 @Injectable()
 export class TransactionService {
