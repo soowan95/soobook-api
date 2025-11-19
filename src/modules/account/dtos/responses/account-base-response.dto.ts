@@ -24,4 +24,7 @@ export class AccountBaseResponseDto extends SoobookDto {
 
   @Exclude()
   user: User;
+
+  @Exclude()
+  version: number;
 }
