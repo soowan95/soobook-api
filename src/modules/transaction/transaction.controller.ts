@@ -40,7 +40,7 @@ export class TransactionController {
   @ApiOkResponse({ type: TransactionBaseResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
-  @Get('daily')
+  @Get('show/daily')
   async showDaily(
     @Req() req: AuthRequest,
     @Query('createdAt') createdAt: string | undefined,
@@ -63,7 +63,7 @@ export class TransactionController {
   @ApiOkResponse({ type: TransactionBaseResponseDto, isArray: true })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
-  @Get('monthly')
+  @Get('show/monthly')
   async showMonthly(
     @Req() req: AuthRequest,
     @Query('createdAt') createdAt: string | undefined,
@@ -86,7 +86,7 @@ export class TransactionController {
   @ApiOkResponse({ type: TransactionMonthlyBriefResponseDto })
   @ApiBearerAuth()
   @ResponseMessage('success.read')
-  @Get('monthly/brief')
+  @Get('show/monthly/brief')
   async showMonthlyBrief(
     @Req() req: AuthRequest,
     @Query('accountId') accountId: number | undefined,
@@ -95,6 +95,26 @@ export class TransactionController {
       req.user.id,
       accountId,
     );
+  }
+
+  @ApiOperation({
+    summary: '[Transaction] 최신 거래내역 조회',
+  })
+  @ApiQuery({ name: 'accountId', required: false })
+  @ApiQuery({ name: 'type', required: true })
+  @ApiOkResponse({ type: TransactionBaseResponseDto })
+  @ApiBearerAuth()
+  @ResponseMessage('success.read')
+  @Get('show/latest')
+  async showLatest(
+    @Req() req: AuthRequest,
+    @Query('accountId') accountId: number | undefined,
+    @Query('type') type: string,
+  ): Promise<TransactionBaseResponseDto> {
+    const transaction: Transaction | null =
+      await this.transactionService.showLatest(req.user.id, accountId, type);
+
+    return plainToInstance(TransactionBaseResponseDto, transaction);
   }
 
   @ApiOperation({

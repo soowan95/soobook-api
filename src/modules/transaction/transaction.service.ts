@@ -106,6 +106,28 @@ export class TransactionService {
     );
   }
 
+  async showLatest(
+    userId: number,
+    accountId: number | undefined,
+    type: string,
+  ): Promise<Transaction | null> {
+    const where: any = {
+      user: { id: userId },
+      type: type,
+    };
+    if (accountId) {
+      where['account'] = { id: accountId };
+    }
+
+    return await this.transactionRepository.findOne({
+      where: where,
+      relations: ['account', 'toAccount', 'category', 'recurrence'],
+      order: {
+        id: 'DESC',
+      },
+    });
+  }
+
   async create(
     request: TransactionCreateRequestDto,
     user: User,
