@@ -42,8 +42,13 @@ async function bootstrap() {
       .setTitle(`Soobook API Documentation`)
       .setDescription(`Soobook API description`)
       .setVersion('1.0-SNAPSHOT')
+      .addTag('- Account', 'Account API Documentation')
       .addTag('- Auth', 'Authentication API Documentation')
+      .addTag('- Category', 'Category API Documentation')
+      .addTag('- Recurrence', 'Recurrence API Documentation')
+      .addTag('- Transaction', 'Transaction API Documentation')
       .addTag('- User', 'User API Documentation')
+      .addTag('- User Setting', 'User Setting API Documentation')
       .addBearerAuth({
         type: 'http',
         scheme: 'bearer',

@@ -5,6 +5,7 @@ import { Transaction } from '../transaction/transaction.entity';
 import { Account } from '../account/account.entity';
 import { Soobook } from '../../common/interfaces/soobook.entity';
 import { Recurrence } from '../recurrence/recurrence.entity';
+import { UserSetting } from '../userSetting/user-setting.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -43,6 +44,9 @@ export class User extends Soobook {
     onDelete: 'CASCADE',
   })
   refreshToken: RefreshToken;
+
+  @OneToOne(() => UserSetting, (setting) => setting.user)
+  setting: UserSetting;
 
   @OneToMany(() => Transaction, (transaction) => transaction.user)
   transactions: Transaction[];
