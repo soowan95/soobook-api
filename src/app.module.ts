@@ -9,6 +9,7 @@ import { CategoryModule } from './modules/category/category.module';
 import { RecurrenceModule } from './modules/recurrence/recurrence.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TaskService } from './common/task/task.service';
+import { UserSettingModule } from './modules/userSetting/user-setting.module';
 
 @Module({
   imports: [
@@ -18,8 +19,9 @@ import { TaskService } from './common/task/task.service';
     AuthModule,
     CategoryModule,
     RecurrenceModule,
-    UserModule,
     TransactionModule,
+    UserModule,
+    UserSettingModule,
   ],
   providers: [TaskService],
 })

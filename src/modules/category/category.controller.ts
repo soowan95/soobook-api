@@ -27,8 +27,8 @@ import { Category } from './category.entity';
 import { CategoryUpdateRequestDto } from './dtos/requests/category-update-request.dto';
 import { CategoryBaseResponseDto } from './dtos/responses/category-base-response.dto';
 
-@ApiTags('- Categories')
-@Controller('categories')
+@ApiTags('- Category')
+@Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 

@@ -9,13 +9,15 @@ import { User, UserRole } from './user.entity';
 import { SignUpRequestDto } from './dtos/requests/sign-up-request.dto';
 import { Argon2Service } from '../../helper/argon2/argon2.service';
 import { UserUpdateRequestDto } from './dtos/requests/user-update-request.dto';
+import { UserSettingService } from '../userSetting/user-setting.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject('USER_REPOSITORY')
     private userRepository: Repository<User>,
-    private readonly argon2Serivce: Argon2Service,
+    private readonly userSettingService: UserSettingService,
+    private readonly argon2Service: Argon2Service,
   ) {}
 
   async findByEmailOrThrow(
@@ -36,16 +38,27 @@ export class UserService {
     return user;
   }
 
-  async signUp(request: SignUpRequestDto): Promise<User> {
+  async signUp(
+    request: SignUpRequestDto,
+    userId: number | undefined = undefined,
+  ): Promise<User> {
     if (request.email) await this.validateEmail(request.email);
     if (request.nickname) await this.validateNickname(request.nickname);
-    request.password = await this.argon2Serivce.hashPassword(request.password);
-    const user = this.userRepository.create({
+    request.password = await this.argon2Service.hashPassword(request.password);
+    let guest: User;
+    let user: User = this.userRepository.create({
       ...request,
       nickname: request.nickname ?? request.name,
     });
 
     if (!request.isGuest) user.role = UserRole.USER;
+    else user.setting = await this.userSettingService.create(user.id);
+    if (userId) {
+      guest = await this.userRepository.findOneByOrFail({
+        id: userId,
+      });
+      user = this.userRepository.merge(guest, user);
+    }
 
     await this.userRepository.save(user);
     return user;
@@ -57,7 +70,7 @@ export class UserService {
       if (request.password !== request.passwordConfirm) {
         throw new BadRequestException('error.user.password.unconfirm');
       }
-      request.password = await this.argon2Serivce.hashPassword(
+      request.password = await this.argon2Service.hashPassword(
         request.password,
       );
     }
