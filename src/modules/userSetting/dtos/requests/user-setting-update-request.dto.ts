@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsString } from 'class-validator';
-import { UserSettingDefaultView } from '../../user-setting.entity';
+import {
+  UserSettingDefaultView,
+  UserSettingTabBarMode,
+} from '../../user-setting.entity';
 
 export class UserSettingUpdateRequestDto {
   @ApiProperty({
@@ -37,4 +40,11 @@ export class UserSettingUpdateRequestDto {
   })
   @IsString()
   defaultView: UserSettingDefaultView;
+
+  @ApiProperty({
+    description: '탭 바 모드',
+    example: 'vertical',
+  })
+  @IsString()
+  tabBarMode: UserSettingTabBarMode;
 }

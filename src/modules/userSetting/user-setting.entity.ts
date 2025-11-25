@@ -9,6 +9,11 @@ export enum UserSettingDefaultView {
   STATISTICS = 'statistics',
 }
 
+export enum UserSettingTabBarMode {
+  VERTICAL = 'vertical',
+  HORIZONTAL = 'horizontal',
+}
+
 @Entity()
 export class UserSetting extends Soobook {
   @OneToOne(() => User, (user) => user.setting, {
@@ -31,8 +36,16 @@ export class UserSetting extends Soobook {
   isShowMainLatestTransaction: boolean;
 
   @Column('enum', {
+    name: 'default_view',
     enum: UserSettingDefaultView,
     default: UserSettingDefaultView.MAIN,
   })
   defaultView: UserSettingDefaultView;
+
+  @Column('enum', {
+    name: 'tab_bar_mode',
+    enum: UserSettingTabBarMode,
+    default: UserSettingTabBarMode.HORIZONTAL,
+  })
+  tabBarMode: UserSettingTabBarMode;
 }
