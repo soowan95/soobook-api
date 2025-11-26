@@ -39,8 +39,8 @@ export class TransactionCreateRequestDto {
     example: '맘스터치 응암역점',
   })
   @IsNotEmpty({ message: '거래처는 필수값입니다.' })
-  @IsString()
-  location: string;
+  @IsOptionalString()
+  location?: string;
 
   @ApiProperty({
     description: '카테고리 ID',

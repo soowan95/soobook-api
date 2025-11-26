@@ -55,6 +55,6 @@ export class Transaction extends Soobook {
   @Column({ nullable: true })
   memo: string;
 
-  @Column()
+  @Column({ nullable: true })
   location: string;
 }

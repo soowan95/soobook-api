@@ -204,10 +204,10 @@ export class TransactionService {
           true,
         );
         updatedAccounts = await this.commit(
-          request.type,
+          request.type ?? transaction.type,
           request.accountId ?? transaction.account.id,
           request.toAccountId,
-          request.amount,
+          request.amount ?? transaction.amount,
         );
       }
     } catch (error) {

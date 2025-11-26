@@ -25,40 +25,40 @@ export class TransactionUpdateRequestDto extends SoobookDto {
     example: '10000',
   })
   @IsOptionalString()
-  amount: Decimal;
+  amount?: Decimal;
 
   @ApiProperty({
     description: '카테고리 ID',
     example: 1,
   })
   @IsOptionalNumber()
-  categoryId: number;
+  categoryId?: number;
 
   @ApiProperty({
     description: '거래 유형',
     example: 'expense',
   })
   @IsOptionalString()
-  type: TransactionType;
+  type?: TransactionType;
 
   @ApiProperty({
     description: '간단한 설명',
     example: '피자',
   })
   @IsOptionalString()
-  description: string;
+  description?: string;
 
   @ApiProperty({
     description: '긴 설명',
     example: '햄버거가 아니라 피자였음.',
   })
   @IsOptionalString()
-  memo: string;
+  memo?: string;
 
   @ApiProperty({
     description: '거래처',
     example: '도미노 피자',
   })
   @IsOptionalString()
-  location: string;
+  location?: string;
 }
