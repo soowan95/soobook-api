@@ -10,6 +10,7 @@ import { RecurrenceModule } from './modules/recurrence/recurrence.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TaskService } from './common/task/task.service';
 import { UserSettingModule } from './modules/userSetting/user-setting.module';
+import { CurrencyModule } from './modules/currency/currency.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UserSettingModule } from './modules/userSetting/user-setting.module';
     AccountModule,
     AuthModule,
     CategoryModule,
+    CurrencyModule,
     RecurrenceModule,
     TransactionModule,
     UserModule,

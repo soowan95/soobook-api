@@ -6,6 +6,7 @@ import { Soobook } from '../../common/interfaces/soobook.entity';
 import { Category } from '../category/category.entity';
 import { TransactionType } from './transaction-type.enum';
 import { Recurrence } from '../recurrence/recurrence.entity';
+import { Currency } from '../currency/currency.entity';
 
 @Entity()
 export class Transaction extends Soobook {
@@ -40,6 +41,10 @@ export class Transaction extends Soobook {
   @ManyToOne(() => Account, (account) => account.transferTransactions)
   @JoinColumn({ name: 'to_account_id' })
   toAccount: Account | null;
+
+  @ManyToOne(() => Currency, (currency) => currency.transactions)
+  @JoinColumn({ name: 'currency'})
+  currency: Currency;
 
   @Column('decimal', { precision: 15, scale: 2 })
   amount: Decimal;

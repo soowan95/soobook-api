@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import Decimal from 'decimal.js';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 import { IsOptionalString } from '../../../../common/decorators/is-optional-string.decorator';
 import { IsOptionalNumber } from '../../../../common/decorators/is-optional-number.decorator';
 import { TransactionType } from '../../transaction-type.enum';
@@ -63,4 +63,11 @@ export class TransactionCreateRequestDto {
   })
   @IsOptionalNumber()
   toAccountId?: number;
+
+  @ApiProperty({
+    description: '통화 코드',
+    example: 'KRW',
+  })
+  @IsOptionalString()
+  currency?: string;
 }

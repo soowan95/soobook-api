@@ -6,12 +6,14 @@ import { Recurrence } from '../../modules/recurrence/recurrence.entity';
 import { TransactionCreateRequestDto } from '../../modules/transaction/dtos/requests/transaction-create-request.dto';
 import { TransactionType } from '../../modules/transaction/transaction-type.enum';
 import { OptimisticLockVersionMismatchError } from 'typeorm';
+import { CurrencyService } from '../../modules/currency/currency.service';
 
 @Injectable()
 export class TaskService {
   constructor(
     private readonly transactionService: TransactionService,
     private readonly recurrenceService: RecurrenceService,
+    private readonly currencyService: CurrencyService,
   ) {}
 
   private readonly logger = new Logger(TaskService.name);
@@ -121,5 +123,12 @@ export class TaskService {
       `🎯 Total: ${totalCnt}\n✅ Success: ${successCnt}\n⛔️ Fail: ${failCnt}`,
     );
     this.logger.log('🏁 Send notification ended');
+  }
+
+  @Cron('0 30 11 * * *')
+  async fetchCurrency(): Promise<void> {
+    this.logger.log('📝 Fetching currency start')
+    await this.currencyService.fetch();
+    this.logger.log('🏁 Fetching currency start')
   }
 }

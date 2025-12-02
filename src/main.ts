@@ -45,6 +45,7 @@ async function bootstrap() {
       .addTag('- Account', 'Account API Documentation')
       .addTag('- Auth', 'Authentication API Documentation')
       .addTag('- Category', 'Category API Documentation')
+      .addTag('- Currency', 'Currency API Documentation')
       .addTag('- Recurrence', 'Recurrence API Documentation')
       .addTag('- Transaction', 'Transaction API Documentation')
       .addTag('- User', 'User API Documentation')
