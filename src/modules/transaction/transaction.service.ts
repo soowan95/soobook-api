@@ -32,6 +32,8 @@ import { Category } from '../category/category.entity';
 import { Recurrence } from '../recurrence/recurrence.entity';
 import { Recursion } from '../../common/decorators/recursion.decorator';
 import { TransactionMonthlyBriefResponseDto } from './dtos/responses/transaction-monthly-brief-response.dto';
+import { Currency } from '../currency/currency.entity';
+import { CurrencyService } from '../currency/currency.service';
 
 @Injectable()
 export class TransactionService {
@@ -40,6 +42,7 @@ export class TransactionService {
     private transactionRepository: Repository<Transaction>,
     private readonly accountService: AccountService,
     private readonly categoryService: CategoryService,
+    private readonly currencyService: CurrencyService,
   ) {}
 
   async showDaily(
@@ -59,7 +62,7 @@ export class TransactionService {
     }
     return await this.transactionRepository.find({
       where: where,
-      relations: ['account', 'toAccount', 'category', 'recurrence'],
+      relations: ['account', 'toAccount', 'category', 'recurrence', 'currency'],
     });
   }
 
@@ -80,7 +83,7 @@ export class TransactionService {
     }
     return await this.transactionRepository.find({
       where: where,
-      relations: ['account', 'toAccount', 'category', 'recurrence'],
+      relations: ['account', 'toAccount', 'category', 'recurrence', 'currency'],
     });
   }
 
@@ -136,6 +139,9 @@ export class TransactionService {
     const category: Category = await this.categoryService.findByIdOrThrow(
       request.categoryId,
     );
+    const currency: Currency = await this.currencyService.findByUnit(
+      request.currency ?? 'KRW',
+    );
     let updatedAccounts: {
       account: Account;
       toAccount: Account | null;
@@ -146,7 +152,7 @@ export class TransactionService {
         request.type,
         request.accountId,
         request.toAccountId,
-        request.amount,
+        request.amount.mul(currency.kftcDealBasR),
       );
     } catch (error) {
       if (error instanceof OptimisticLockVersionMismatchError)
@@ -164,6 +170,7 @@ export class TransactionService {
       account: updatedAccounts.account,
       toAccount: updatedAccounts.toAccount ?? undefined,
       recurrence: recurrence,
+      currency: currency,
     });
 
     transaction = await this.transactionRepository.save(transaction);
@@ -181,6 +188,7 @@ export class TransactionService {
       throw new ForbiddenException('warning.transaction.forbidden');
     }
     let category: Category | null = null;
+    let currency: Currency = transaction.currency;
     let updatedAccounts: {
       account: Account;
       toAccount: Account | null;
@@ -188,6 +196,8 @@ export class TransactionService {
 
     if (request.categoryId)
       category = await this.categoryService.findByIdOrThrow(request.categoryId);
+    if (request.currency)
+      currency = await this.currencyService.findByUnit(request.currency);
 
     try {
       if (
@@ -200,14 +210,15 @@ export class TransactionService {
           transaction.type,
           transaction.account.id,
           transaction.toAccount?.id,
-          transaction.amount,
+          transaction.amount.mul(transaction.currency.kftcDealBasR),
           true,
         );
         updatedAccounts = await this.commit(
           request.type ?? transaction.type,
           request.accountId ?? transaction.account.id,
           request.toAccountId,
-          request.amount ?? transaction.amount,
+          request.amount?.mul(currency.kftcDealBasR) ??
+            transaction.amount.mul(currency.kftcDealBasR),
         );
       }
     } catch (error) {
@@ -224,6 +235,7 @@ export class TransactionService {
       account: updatedAccounts.account ?? undefined,
       toAccount: updatedAccounts.toAccount,
       category: category ?? undefined,
+      currency: currency,
     });
 
     if (!updatedAccounts.toAccount) {
@@ -364,7 +376,8 @@ export class TransactionService {
     return transactions
       .filter((t) => t.type == type)
       .reduce(
-        (sum: Decimal, t) => sum.plus(new Decimal(t.amount)),
+        (sum: Decimal, t) =>
+          sum.plus(new Decimal(t.amount.mul(t.currency.kftcDealBasR))),
         new Decimal(0),
       );
   }

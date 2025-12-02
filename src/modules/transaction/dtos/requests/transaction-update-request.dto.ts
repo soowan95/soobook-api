@@ -61,4 +61,11 @@ export class TransactionUpdateRequestDto extends SoobookDto {
   })
   @IsOptionalString()
   location?: string;
+
+  @ApiProperty({
+    description: '통화 코드',
+    example: 'KRW',
+  })
+  @IsOptionalString()
+  currency?: string;
 }
