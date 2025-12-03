@@ -1,7 +1,7 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { LogLevel, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, LogLevel, ValidationPipe } from '@nestjs/common';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import * as dotenv from 'dotenv';
 import { JwtGuard } from './common/guards/jwt.guard';
@@ -22,6 +22,13 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
+      exceptionFactory: (errors) => {
+        const errorMessages = errors.flatMap((error) =>
+          Object.values(error.constraints ?? {}),
+        );
+        const singleStringMessage = errorMessages.join(', ');
+        return new BadRequestException(singleStringMessage);
+      },
       whitelist: true,
       transform: true,
     }),
