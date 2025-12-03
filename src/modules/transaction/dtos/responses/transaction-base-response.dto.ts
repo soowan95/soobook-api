@@ -5,6 +5,7 @@ import { Account } from '../../../account/account.entity';
 import { User } from '../../../user/user.entity';
 import { Category } from '../../../category/category.entity';
 import { Recurrence } from '../../../recurrence/recurrence.entity';
+import { Currency } from '../../../currency/currency.entity';
 
 export class TransactionBaseResponseDto extends SoobookDto {
   @ApiProperty({
@@ -49,6 +50,13 @@ export class TransactionBaseResponseDto extends SoobookDto {
   @Transform(({ obj }) => obj.recurrence?.id, { toClassOnly: true })
   recurrenceId?: number;
 
+  @ApiProperty({
+    description: '통화 코드',
+  })
+  @Expose()
+  @Transform(({ obj }) => obj.currency?.unit, { toClassOnly: true })
+  currencyUnit: string;
+
   @Exclude()
   account: Account;
 
@@ -63,4 +71,7 @@ export class TransactionBaseResponseDto extends SoobookDto {
 
   @Exclude()
   recurrence: Recurrence;
+
+  @Exclude()
+  currency: Currency;
 }
