@@ -67,7 +67,7 @@ export class User extends Soobook {
     const guestId = `Guest_${nanoid(8)}`;
 
     return {
-      email: `${guestId}@guest.soobook`,
+      email: `${guestId}@guest.com`,
       password: nanoid(),
       phoneNo: '01000000000',
       name: guestId,
