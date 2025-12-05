@@ -69,5 +69,5 @@ export class TransactionCreateRequestDto {
     example: 'KRW',
   })
   @IsOptionalString()
-  currency?: string;
+  currencyUnit?: string;
 }

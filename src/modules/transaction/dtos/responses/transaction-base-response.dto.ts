@@ -37,6 +37,13 @@ export class TransactionBaseResponseDto extends SoobookDto {
   toAccountName?: string;
 
   @ApiProperty({
+    description: '카테고리 ID',
+  })
+  @Expose()
+  @Transform(({ obj }) => obj.category.id, { toClassOnly: true })
+  categoryId: number;
+
+  @ApiProperty({
     description: '카테고리 명',
   })
   @Expose()

@@ -101,6 +101,7 @@ export class TransactionService {
 
     let transactions: Transaction[] = await this.transactionRepository.find({
       where: where,
+      relations: ['currency'],
     });
 
     return new TransactionMonthlyBriefResponseDto(
@@ -124,7 +125,7 @@ export class TransactionService {
 
     return await this.transactionRepository.findOne({
       where: where,
-      relations: ['account', 'toAccount', 'category', 'recurrence'],
+      relations: ['account', 'toAccount', 'category', 'recurrence', 'currency'],
       order: {
         id: 'DESC',
       },
@@ -140,7 +141,7 @@ export class TransactionService {
       request.categoryId,
     );
     const currency: Currency = await this.currencyService.findByUnit(
-      request.currency ?? 'KRW',
+      request.currencyUnit ?? 'KRW',
     );
     let updatedAccounts: {
       account: Account;
@@ -152,7 +153,7 @@ export class TransactionService {
         request.type,
         request.accountId,
         request.toAccountId,
-        request.amount.mul(currency.kftcDealBasR),
+        new Decimal(request.amount).mul(currency.kftcDealBasR),
       );
     } catch (error) {
       if (error instanceof OptimisticLockVersionMismatchError)
@@ -196,8 +197,8 @@ export class TransactionService {
 
     if (request.categoryId)
       category = await this.categoryService.findByIdOrThrow(request.categoryId);
-    if (request.currency)
-      currency = await this.currencyService.findByUnit(request.currency);
+    if (request.currencyUnit)
+      currency = await this.currencyService.findByUnit(request.currencyUnit);
 
     try {
       if (
@@ -217,8 +218,9 @@ export class TransactionService {
           request.type ?? transaction.type,
           request.accountId ?? transaction.account.id,
           request.toAccountId,
-          request.amount?.mul(currency.kftcDealBasR) ??
-            transaction.amount.mul(currency.kftcDealBasR),
+          request.amount
+            ? new Decimal(request.amount).mul(currency.kftcDealBasR)
+            : transaction.amount.mul(currency.kftcDealBasR),
         );
       }
     } catch (error) {
@@ -377,7 +379,7 @@ export class TransactionService {
       .filter((t) => t.type == type)
       .reduce(
         (sum: Decimal, t) =>
-          sum.plus(new Decimal(t.amount.mul(t.currency.kftcDealBasR))),
+          sum.plus(new Decimal(t.amount).mul(t.currency.kftcDealBasR)),
         new Decimal(0),
       );
   }
