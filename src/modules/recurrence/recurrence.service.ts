@@ -17,6 +17,8 @@ import { TransactionUpdateRequestDto } from '../transaction/dtos/requests/transa
 import { TransactionService } from '../transaction/transaction.service';
 import { CategoryService } from '../category/category.service';
 import { Category } from '../category/category.entity';
+import { CurrencyService } from '../currency/currency.service';
+import { Currency } from '../currency/currency.entity';
 
 @Injectable()
 export class RecurrenceService {
@@ -25,6 +27,7 @@ export class RecurrenceService {
     private recurrenceRepository: Repository<Recurrence>,
     private readonly accountService: AccountService,
     private readonly categoryService: CategoryService,
+    private readonly currencyService: CurrencyService,
     private readonly transactionService: TransactionService,
   ) {}
 
@@ -44,6 +47,9 @@ export class RecurrenceService {
     const category: Category = await this.categoryService.findByIdOrThrow(
       request.categoryId,
     );
+    const currency: Currency = await this.currencyService.findByUnit(
+      request.unit,
+    );
 
     return await this.recurrenceRepository.save({
       ...request,
@@ -51,6 +57,7 @@ export class RecurrenceService {
       account: account,
       toAccount: toAccount,
       category: category,
+      currency: currency,
     });
   }
 
@@ -128,6 +135,7 @@ export class RecurrenceService {
     let account: Account | null = null;
     let toAccount: Account | null = null;
     let category: Category | null = null;
+    let currency: Currency | null = null;
     if (request.accountId) {
       account = await this.accountService.findByIdOrThrow(request.accountId);
     }
@@ -161,11 +169,16 @@ export class RecurrenceService {
       }
     }
 
+    if (request.unit) {
+      currency = await this.currencyService.findByUnit(request.unit);
+    }
+
     recurrence = this.recurrenceRepository.merge(recurrence, {
       ...request,
       account: account ?? undefined,
       toAccount: toAccount,
       category: category ?? undefined,
+      currency: currency ?? recurrence.currency,
     });
 
     if (!request.toAccountId && recurrence.toAccount) {

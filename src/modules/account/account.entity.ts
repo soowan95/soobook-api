@@ -11,6 +11,7 @@ import Decimal from 'decimal.js';
 import { Transaction } from '../transaction/transaction.entity';
 import { Soobook } from '../../common/interfaces/soobook.entity';
 import { Recurrence } from '../recurrence/recurrence.entity';
+import { Balance } from '../balance/balance.entity';
 
 export enum AccountType {
   CASH = 'cash',
@@ -59,17 +60,6 @@ export class Account extends Soobook {
   @Column({ length: 30, nullable: true })
   description: string;
 
-  @Column('decimal', {
-    name: 'initial_balance',
-    default: 0,
-    precision: 15,
-    scale: 2,
-  })
-  initialBalance: Decimal;
-
-  @Column('decimal', { name: 'current_balance', precision: 15, scale: 2 })
-  currentBalance: Decimal;
-
   @VersionColumn()
   version: number;
 
@@ -91,4 +81,7 @@ export class Account extends Soobook {
 
   @OneToMany(() => Recurrence, (recurrence) => recurrence.toAccount)
   transferRecurrences: Recurrence[];
+
+  @OneToMany(() => Balance, (balance) => balance.account)
+  balances: Balance[];
 }

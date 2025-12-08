@@ -11,6 +11,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TaskService } from './common/task/task.service';
 import { UserSettingModule } from './modules/userSetting/user-setting.module';
 import { CurrencyModule } from './modules/currency/currency.module';
+import { BalanceModule } from './modules/balance/balance.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CurrencyModule } from './modules/currency/currency.module';
     Argon2Module,
     AccountModule,
     AuthModule,
+    BalanceModule,
     CategoryModule,
     CurrencyModule,
     RecurrenceModule,

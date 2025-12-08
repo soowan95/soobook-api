@@ -38,6 +38,13 @@ export class RecurrenceUpdateRequestDto extends SoobookDto {
   amount?: Decimal;
 
   @ApiProperty({
+    description: '통화 코드',
+    example: 'KRW',
+  })
+  @IsOptionalString()
+  unit?: string;
+
+  @ApiProperty({
     description: '간단한 설명',
     example: '예금',
   })

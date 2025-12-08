@@ -6,9 +6,16 @@ import { RecurrenceService } from './recurrence.service';
 import { RecurrenceController } from './recurrence.controller';
 import { TransactionModule } from '../transaction/transaction.module';
 import { CategoryModule } from '../category/category.module';
+import { CurrencyModule } from '../currency/currency.module';
 
 @Module({
-  imports: [DatabaseModule, AccountModule, CategoryModule, TransactionModule],
+  imports: [
+    DatabaseModule,
+    AccountModule,
+    CategoryModule,
+    CurrencyModule,
+    TransactionModule,
+  ],
   controllers: [RecurrenceController],
   providers: [...recurrenceProvider, RecurrenceService],
   exports: [RecurrenceService],

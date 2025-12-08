@@ -34,6 +34,8 @@ import { Recursion } from '../../common/decorators/recursion.decorator';
 import { TransactionMonthlyBriefResponseDto } from './dtos/responses/transaction-monthly-brief-response.dto';
 import { Currency } from '../currency/currency.entity';
 import { CurrencyService } from '../currency/currency.service';
+import { Balance } from '../balance/balance.entity';
+import { BalanceService } from '../balance/balance.service';
 
 @Injectable()
 export class TransactionService {
@@ -41,6 +43,7 @@ export class TransactionService {
     @Inject('TRANSACTION_REPOSITORY')
     private transactionRepository: Repository<Transaction>,
     private readonly accountService: AccountService,
+    private readonly balanceService: BalanceService,
     private readonly categoryService: CategoryService,
     private readonly currencyService: CurrencyService,
   ) {}
@@ -154,6 +157,7 @@ export class TransactionService {
         request.accountId,
         request.toAccountId,
         new Decimal(request.amount).mul(currency.kftcDealBasR),
+        currency,
       );
     } catch (error) {
       if (error instanceof OptimisticLockVersionMismatchError)
@@ -212,6 +216,7 @@ export class TransactionService {
           transaction.account.id,
           transaction.toAccount?.id,
           transaction.amount.mul(transaction.currency.kftcDealBasR),
+          transaction.currency,
           true,
         );
         updatedAccounts = await this.commit(
@@ -221,6 +226,7 @@ export class TransactionService {
           request.amount
             ? new Decimal(request.amount).mul(currency.kftcDealBasR)
             : transaction.amount.mul(currency.kftcDealBasR),
+          currency,
         );
       }
     } catch (error) {
@@ -254,6 +260,7 @@ export class TransactionService {
       transaction.account.id,
       transaction.toAccount?.id,
       transaction.amount,
+      transaction.currency,
       true,
     )
       .then(() => {
@@ -272,11 +279,15 @@ export class TransactionService {
     accountId: number,
     toAccountId: number | undefined,
     amount: Decimal,
+    currency: Currency,
     rollback: boolean = false,
   ): Promise<{ account: Account; toAccount: Account | null }> {
     await this.mandatoryTransfer(type, accountId, toAccountId);
     let account: Account = await this.accountService.findByIdOrThrow(accountId);
+    let accountBalance: Balance =
+      await this.balanceService.findByAccountAndCurrency(account, currency);
     let toAccount: Account | null = null;
+    let toAccountBalance: Balance | null = null;
 
     let accountUpdateRequestDto: AccountUpdateRequestDto =
       new AccountUpdateRequestDto();
@@ -287,43 +298,52 @@ export class TransactionService {
     switch (type) {
       case 'income':
         if (rollback)
-          await this.checkBalance(new Decimal(account.currentBalance), amount);
-        accountUpdateRequestDto.currentBalance = rollback
-          ? new Decimal(account.currentBalance).minus(amount)
-          : new Decimal(account.currentBalance).plus(amount);
+          await this.checkBalance(new Decimal(accountBalance.amount), amount);
+        accountBalance.amount = rollback
+          ? new Decimal(accountBalance.amount).minus(amount)
+          : new Decimal(accountBalance.amount).plus(amount);
         break;
       case 'expense':
         if (!rollback)
-          await this.checkBalance(new Decimal(account.currentBalance), amount);
-        accountUpdateRequestDto.currentBalance = rollback
-          ? new Decimal(account.currentBalance).plus(amount)
-          : new Decimal(account.currentBalance).minus(amount);
+          await this.checkBalance(new Decimal(accountBalance.amount), amount);
+        accountBalance.amount = rollback
+          ? new Decimal(accountBalance.amount).plus(amount)
+          : new Decimal(accountBalance.amount).minus(amount);
         break;
       case 'transfer':
         toAccount = await this.accountService.findByIdOrThrow(toAccountId!);
+        toAccountBalance = await this.balanceService.findByAccountAndCurrency(
+          toAccount,
+          currency,
+        );
         rollback
           ? await this.checkBalance(
-              new Decimal(toAccount.currentBalance),
+              new Decimal(toAccountBalance.amount),
               amount,
             )
-          : await this.checkBalance(
-              new Decimal(account.currentBalance),
-              amount,
-            );
-        accountUpdateRequestDto.currentBalance = rollback
-          ? new Decimal(account.currentBalance).plus(amount)
-          : new Decimal(account.currentBalance).minus(amount);
+          : await this.checkBalance(new Decimal(accountBalance.amount), amount);
+        accountBalance.amount = rollback
+          ? new Decimal(accountBalance.amount).plus(amount)
+          : new Decimal(accountBalance.amount).minus(amount);
         toAccountUpdateRequestDto.id = toAccountId!;
-        toAccountUpdateRequestDto.currentBalance = rollback
-          ? new Decimal(toAccount.currentBalance).minus(amount)
-          : new Decimal(toAccount.currentBalance).plus(amount);
+        toAccountBalance.amount = rollback
+          ? new Decimal(toAccountBalance.amount).minus(amount)
+          : new Decimal(toAccountBalance.amount).plus(amount);
         break;
     }
 
     account = await this.accountService.update(accountUpdateRequestDto);
+    await this.balanceService.save(account, currency, accountBalance.amount);
 
     if (type == TransactionType.TRANSFER) {
       toAccount = await this.accountService.update(toAccountUpdateRequestDto);
+    }
+    if (toAccount && toAccountBalance) {
+      await this.balanceService.save(
+        toAccount,
+        currency,
+        toAccountBalance.amount,
+      );
     }
 
     return { account, toAccount };
@@ -335,7 +355,7 @@ export class TransactionService {
         where: {
           id: id,
         },
-        relations: ['account', 'toAccount', 'category', 'user'],
+        relations: ['account', 'toAccount', 'category', 'user', 'currency'],
       });
     if (!transaction) throw new NotFoundException('error.transaction.notFound');
     return transaction;

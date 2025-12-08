@@ -63,6 +63,13 @@ export class AccountCreateRequestDto {
   initialBalance: Decimal;
 
   @ApiProperty({
+    description: '통화 코드',
+    example: 'KRW',
+  })
+  @IsString()
+  unit: string;
+
+  @ApiProperty({
     description: '신용카드 결제 계좌',
     example: 1,
   })

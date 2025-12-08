@@ -7,6 +7,8 @@ import { TransactionCreateRequestDto } from '../../modules/transaction/dtos/requ
 import { TransactionType } from '../../modules/transaction/transaction-type.enum';
 import { OptimisticLockVersionMismatchError } from 'typeorm';
 import { CurrencyService } from '../../modules/currency/currency.service';
+import { Balance } from '../../modules/balance/balance.entity';
+import { BalanceService } from '../../modules/balance/balance.service';
 
 @Injectable()
 export class TaskService {
@@ -14,6 +16,7 @@ export class TaskService {
     private readonly transactionService: TransactionService,
     private readonly recurrenceService: RecurrenceService,
     private readonly currencyService: CurrencyService,
+    private readonly balanceService: BalanceService,
   ) {}
 
   private readonly logger = new Logger(TaskService.name);
@@ -93,11 +96,11 @@ export class TaskService {
     this.logger.log('📲 Send notification started');
 
     const dailyTargets: Recurrence[] =
-      await this.recurrenceService.getDailyTarget(1, ['account']);
+      await this.recurrenceService.getDailyTarget(1, ['account', 'currency']);
     const weeklyTargets: Recurrence[] =
-      await this.recurrenceService.getWeeklyTarget(3, ['account']);
+      await this.recurrenceService.getWeeklyTarget(3, ['account', 'currency']);
     const monthlyTargets: Recurrence[] =
-      await this.recurrenceService.getMonthlyTarget(3, ['account']);
+      await this.recurrenceService.getMonthlyTarget(3, ['account', 'currency']);
     const allTargets: Recurrence[] = [
       ...dailyTargets,
       ...weeklyTargets,
@@ -109,10 +112,15 @@ export class TaskService {
     let failCnt: number = 0;
 
     for (const recurrence of allTargets) {
+      const balance: Balance =
+        await this.balanceService.findByAccountAndCurrency(
+          recurrence.account,
+          recurrence.currency,
+        );
       if (
         (recurrence.type == TransactionType.EXPENSE ||
           recurrence.type == TransactionType.TRANSFER) &&
-        recurrence.account.currentBalance < recurrence.amount
+        balance.amount < recurrence.amount
       ) {
         // TODO: Send notification
         this.logger.log('> Insufficient balance');
@@ -127,8 +135,8 @@ export class TaskService {
 
   @Cron('0 30 11 * * *')
   async fetchCurrency(): Promise<void> {
-    this.logger.log('📝 Fetching currency start')
+    this.logger.log('📝 Fetching currency start');
     await this.currencyService.fetch();
-    this.logger.log('🏁 Fetching currency start')
+    this.logger.log('🏁 Fetching currency start');
   }
 }
