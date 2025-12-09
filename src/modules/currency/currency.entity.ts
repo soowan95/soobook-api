@@ -8,6 +8,8 @@ import {
 } from 'typeorm';
 import Decimal from 'decimal.js';
 import { Transaction } from '../transaction/transaction.entity';
+import { Balance } from '../balance/balance.entity';
+import { Recurrence } from '../recurrence/recurrence.entity';
 
 @Entity()
 export class Currency {
@@ -34,4 +36,10 @@ export class Currency {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @OneToMany(() => Balance, (balance) => balance.currency)
+  balances: Balance[];
+
+  @OneToMany(() => Recurrence, (recurrence) => recurrence.currency)
+  recurrences: Recurrence[];
 }

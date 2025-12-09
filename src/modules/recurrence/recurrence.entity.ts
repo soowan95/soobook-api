@@ -6,6 +6,7 @@ import Decimal from 'decimal.js';
 import { TransactionType } from '../transaction/transaction-type.enum';
 import { Transaction } from '../transaction/transaction.entity';
 import { Category } from '../category/category.entity';
+import { Currency } from '../currency/currency.entity';
 
 export enum RecurrencePeriodType {
   DAILY = 'daily',
@@ -40,6 +41,12 @@ export class Recurrence extends Soobook {
   })
   @JoinColumn({ name: 'category_id' })
   category: Category;
+
+  @ManyToOne(() => Currency, (currency) => currency.recurrences, {
+    nullable: false,
+  })
+  @JoinColumn({ name: 'unit' })
+  currency: Currency;
 
   @OneToMany(() => Transaction, (transaction) => transaction.recurrence)
   transactions: Transaction[];

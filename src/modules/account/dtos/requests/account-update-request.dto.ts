@@ -73,11 +73,11 @@ export class AccountUpdateRequestDto extends SoobookDto {
   initialBalance?: Decimal;
 
   @ApiProperty({
-    description: '현재 잔액 - transactionService 에서만 사용',
-    example: 0,
+    description: '통화 코드',
+    example: 'KRW'
   })
   @IsOptionalString()
-  currentBalance?: Decimal;
+  unit: string;
 
   @ApiProperty({
     description: '신용카드 결제 계좌',
