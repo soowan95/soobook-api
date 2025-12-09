@@ -67,5 +67,5 @@ export class TransactionUpdateRequestDto extends SoobookDto {
     example: 'KRW',
   })
   @IsOptionalString()
-  currencyUnit?: string;
+  unit?: string;
 }

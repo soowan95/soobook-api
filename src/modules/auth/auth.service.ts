@@ -88,6 +88,7 @@ export class AuthService {
     accountCreateRequest.type = AccountType.CASH;
     accountCreateRequest.initialBalance = new Decimal(0);
     accountCreateRequest.isActive = true;
+    accountCreateRequest.unit = 'KRW';
 
     await this.accountService.create(accountCreateRequest, guest);
 

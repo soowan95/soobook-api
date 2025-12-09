@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryColumn,
+  VersionColumn,
+} from 'typeorm';
 import { Currency } from '../currency/currency.entity';
 import Decimal from 'decimal.js';
 import { Account } from '../account/account.entity';
@@ -26,4 +33,7 @@ export class Balance {
 
   @Column('decimal', { default: 0 })
   amount: Decimal;
+
+  @VersionColumn()
+  version: number;
 }

@@ -15,6 +15,7 @@ import { AccountTotalCurrentBalanceResponse } from './dtos/responses/account-tot
 import { CurrencyService } from '../currency/currency.service';
 import { BalanceService } from '../balance/balance.service';
 import { Balance } from '../balance/balance.entity';
+import { Currency } from '../currency/currency.entity';
 
 @Injectable()
 export class AccountService {
@@ -49,7 +50,8 @@ export class AccountService {
       .getMany();
   }
 
-  async findByIdOrThrow(id: number): Promise<Account> {
+  async findByIdOrThrow(id: number | undefined): Promise<Account | undefined> {
+    if (!id) return undefined;
     const account: Account | null = await this.accountRepository.findOneBy({
       id: id,
     });
@@ -74,13 +76,16 @@ export class AccountService {
 
     account = await this.accountRepository.save(account);
 
-    const currency = await this.currencyService.findByUnit(request.unit);
-
-    await this.balanceService.save(
-      account,
-      currency,
-      new Decimal(request.initialBalance),
+    const currency: Currency = await this.currencyService.findByUnit(
+      request.unit,
     );
+
+    let balance: Balance = new Balance();
+    balance.accountId = account.id;
+    balance.unit = currency.unit;
+    balance.amount = new Decimal(request.initialBalance);
+
+    await this.balanceService.save(balance);
 
     return account;
   }
@@ -123,10 +128,9 @@ export class AccountService {
         throw new NotFoundException('error.account.notFound');
       });
 
-    let currency = await this.currencyService.findByUnit(request.unit);
-    let balance = await this.balanceService.findByAccountAndCurrency(
-      account,
-      currency,
+    let balance = await this.balanceService.findByAccountIdAndUnit(
+      request.id,
+      request.unit,
     );
 
     if (request.initialBalance) {
@@ -134,12 +138,12 @@ export class AccountService {
         new Decimal(balance.amount),
       );
 
-      const newBalance = new Decimal(balance.amount).plus(difference);
+      balance.amount = new Decimal(balance.amount).plus(difference);
 
-      if (newBalance.lt(0)) {
+      if (balance.amount.lt(0)) {
         throw new BadRequestException('error.transaction.insufficient.balance');
       } else {
-        await this.balanceService.save(account, currency, newBalance);
+        await this.balanceService.save(balance);
       }
     }
 

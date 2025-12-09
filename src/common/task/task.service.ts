@@ -113,9 +113,9 @@ export class TaskService {
 
     for (const recurrence of allTargets) {
       const balance: Balance =
-        await this.balanceService.findByAccountAndCurrency(
-          recurrence.account,
-          recurrence.currency,
+        await this.balanceService.findByAccountIdAndUnit(
+          recurrence.account.id,
+          recurrence.currency.unit,
         );
       if (
         (recurrence.type == TransactionType.EXPENSE ||
@@ -133,7 +133,7 @@ export class TaskService {
     this.logger.log('🏁 Send notification ended');
   }
 
-  @Cron('0 30 11 * * *')
+  @Cron(CronExpression.EVERY_DAY_AT_NOON)
   async fetchCurrency(): Promise<void> {
     this.logger.log('📝 Fetching currency start');
     await this.currencyService.fetch();

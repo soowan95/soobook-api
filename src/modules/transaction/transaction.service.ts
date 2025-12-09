@@ -22,7 +22,6 @@ import {
 import { TransactionCreateRequestDto } from './dtos/requests/transaction-create-request.dto';
 import { User } from '../user/user.entity';
 import { AccountService } from '../account/account.service';
-import { AccountUpdateRequestDto } from '../account/dtos/requests/account-update-request.dto';
 import Decimal from 'decimal.js';
 import { Account } from '../account/account.entity';
 import { TransactionType } from './transaction-type.enum';
@@ -144,20 +143,20 @@ export class TransactionService {
       request.categoryId,
     );
     const currency: Currency = await this.currencyService.findByUnit(
-      request.currencyUnit ?? 'KRW',
+      request.unit ?? 'KRW',
     );
-    let updatedAccounts: {
-      account: Account;
-      toAccount: Account | null;
-    } = { account: new Account(), toAccount: null };
+    const account: Account | undefined =
+      await this.accountService.findByIdOrThrow(request.accountId);
+    const toAccount: Account | undefined =
+      await this.accountService.findByIdOrThrow(request.toAccountId);
 
     try {
-      updatedAccounts = await this.commit(
+      await this.commit(
         request.type,
         request.accountId,
         request.toAccountId,
-        new Decimal(request.amount).mul(currency.kftcDealBasR),
-        currency,
+        request.amount,
+        currency.unit,
       );
     } catch (error) {
       if (error instanceof OptimisticLockVersionMismatchError)
@@ -166,14 +165,14 @@ export class TransactionService {
     }
 
     if (request.type == TransactionType.TRANSFER)
-      request.location = `${updatedAccounts.account.name} -> ${updatedAccounts.toAccount!.name}`;
+      request.location = `${account!.name} -> ${toAccount!.name}`;
 
     let transaction: Transaction = this.transactionRepository.create({
       ...request,
       user: user,
       category: category,
-      account: updatedAccounts.account,
-      toAccount: updatedAccounts.toAccount ?? undefined,
+      account: account!,
+      toAccount: toAccount,
       recurrence: recurrence,
       currency: currency,
     });
@@ -194,15 +193,13 @@ export class TransactionService {
     }
     let category: Category | null = null;
     let currency: Currency = transaction.currency;
-    let updatedAccounts: {
-      account: Account;
-      toAccount: Account | null;
-    } = { account: new Account(), toAccount: null };
+    let account: Account | undefined = undefined;
+    let toAccount: Account | undefined = undefined;
 
     if (request.categoryId)
       category = await this.categoryService.findByIdOrThrow(request.categoryId);
-    if (request.currencyUnit)
-      currency = await this.currencyService.findByUnit(request.currencyUnit);
+    if (request.unit)
+      currency = await this.currencyService.findByUnit(request.unit);
 
     try {
       if (
@@ -215,18 +212,22 @@ export class TransactionService {
           transaction.type,
           transaction.account.id,
           transaction.toAccount?.id,
-          transaction.amount.mul(transaction.currency.kftcDealBasR),
-          transaction.currency,
+          transaction.amount,
+          transaction.currency.unit,
           true,
         );
-        updatedAccounts = await this.commit(
+        await this.commit(
           request.type ?? transaction.type,
           request.accountId ?? transaction.account.id,
           request.toAccountId,
           request.amount
-            ? new Decimal(request.amount).mul(currency.kftcDealBasR)
-            : transaction.amount.mul(currency.kftcDealBasR),
-          currency,
+            ? request.amount
+            : transaction.amount,
+          currency.unit,
+        );
+        account = await this.accountService.findByIdOrThrow(request.accountId);
+        toAccount = await this.accountService.findByIdOrThrow(
+          request.toAccountId,
         );
       }
     } catch (error) {
@@ -236,17 +237,17 @@ export class TransactionService {
     }
 
     if (request.type == TransactionType.TRANSFER)
-      request.location = `${updatedAccounts.account!.name} -> ${updatedAccounts.toAccount!.name}`;
+      request.location = `${account!.name} -> ${toAccount!.name}`;
 
     transaction = this.transactionRepository.merge(transaction, {
       ...request,
-      account: updatedAccounts.account ?? undefined,
-      toAccount: updatedAccounts.toAccount,
+      account: account,
+      toAccount: toAccount,
       category: category ?? undefined,
       currency: currency,
     });
 
-    if (!updatedAccounts.toAccount) {
+    if (!toAccount) {
       transaction.toAccount = null;
     }
 
@@ -260,7 +261,7 @@ export class TransactionService {
       transaction.account.id,
       transaction.toAccount?.id,
       transaction.amount,
-      transaction.currency,
+      transaction.currency.unit,
       true,
     )
       .then(() => {
@@ -279,21 +280,13 @@ export class TransactionService {
     accountId: number,
     toAccountId: number | undefined,
     amount: Decimal,
-    currency: Currency,
+    unit: string,
     rollback: boolean = false,
-  ): Promise<{ account: Account; toAccount: Account | null }> {
+  ): Promise<void> {
     await this.mandatoryTransfer(type, accountId, toAccountId);
-    let account: Account = await this.accountService.findByIdOrThrow(accountId);
     let accountBalance: Balance =
-      await this.balanceService.findByAccountAndCurrency(account, currency);
-    let toAccount: Account | null = null;
+      await this.balanceService.findByAccountIdAndUnit(accountId, unit);
     let toAccountBalance: Balance | null = null;
-
-    let accountUpdateRequestDto: AccountUpdateRequestDto =
-      new AccountUpdateRequestDto();
-    accountUpdateRequestDto.id = accountId;
-    let toAccountUpdateRequestDto: AccountUpdateRequestDto =
-      new AccountUpdateRequestDto();
 
     switch (type) {
       case 'income':
@@ -311,10 +304,9 @@ export class TransactionService {
           : new Decimal(accountBalance.amount).minus(amount);
         break;
       case 'transfer':
-        toAccount = await this.accountService.findByIdOrThrow(toAccountId!);
-        toAccountBalance = await this.balanceService.findByAccountAndCurrency(
-          toAccount,
-          currency,
+        toAccountBalance = await this.balanceService.findByAccountIdAndUnit(
+          toAccountId!,
+          unit,
         );
         rollback
           ? await this.checkBalance(
@@ -325,28 +317,17 @@ export class TransactionService {
         accountBalance.amount = rollback
           ? new Decimal(accountBalance.amount).plus(amount)
           : new Decimal(accountBalance.amount).minus(amount);
-        toAccountUpdateRequestDto.id = toAccountId!;
         toAccountBalance.amount = rollback
           ? new Decimal(toAccountBalance.amount).minus(amount)
           : new Decimal(toAccountBalance.amount).plus(amount);
         break;
     }
 
-    account = await this.accountService.update(accountUpdateRequestDto);
-    await this.balanceService.save(account, currency, accountBalance.amount);
+    await this.balanceService.save(accountBalance);
 
     if (type == TransactionType.TRANSFER) {
-      toAccount = await this.accountService.update(toAccountUpdateRequestDto);
+      await this.balanceService.save(toAccountBalance!);
     }
-    if (toAccount && toAccountBalance) {
-      await this.balanceService.save(
-        toAccount,
-        currency,
-        toAccountBalance.amount,
-      );
-    }
-
-    return { account, toAccount };
   }
 
   private async findByIdOrThrow(id: number): Promise<Transaction> {

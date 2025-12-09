@@ -62,7 +62,7 @@ export class TransactionBaseResponseDto extends SoobookDto {
   })
   @Expose()
   @Transform(({ obj }) => obj.currency?.unit, { toClassOnly: true })
-  currencyUnit: string;
+  unit: string;
 
   @Exclude()
   account: Account;

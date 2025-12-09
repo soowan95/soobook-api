@@ -35,10 +35,10 @@ export class RecurrenceService {
     request: RecurrenceCreateRequestDto,
     user: User,
   ): Promise<Recurrence> {
-    const account: Account = await this.accountService.findByIdOrThrow(
+    const account: Account | undefined = await this.accountService.findByIdOrThrow(
       request.accountId,
     );
-    let toAccount: Account | null = null;
+    let toAccount: Account | undefined = undefined;
     if (request.toAccountId) {
       toAccount = await this.accountService.findByIdOrThrow(
         request.toAccountId,
@@ -132,8 +132,8 @@ export class RecurrenceService {
   ): Promise<Recurrence> {
     let recurrence: Recurrence = await this.findByIdOrThrow(request.id);
     await this.checkTransactions(request, recurrence);
-    let account: Account | null = null;
-    let toAccount: Account | null = null;
+    let account: Account | undefined = undefined;
+    let toAccount: Account | undefined = undefined;
     let category: Category | null = null;
     let currency: Currency | null = null;
     if (request.accountId) {

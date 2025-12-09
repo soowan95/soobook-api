@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Balance } from './balance.entity';
 import { Account } from '../account/account.entity';
-import { Currency } from '../currency/currency.entity';
 import Decimal from 'decimal.js';
 
 @Injectable()
@@ -24,23 +23,23 @@ export class BalanceService {
     });
   }
 
-  async findByAccountAndCurrency(
-    account: Account,
-    currency: Currency,
+  async findByAccountIdAndUnit(
+    accountId: number,
+    unit: string,
     relations: string[] = [],
   ): Promise<Balance> {
     let balance: Balance | null = await this.balanceRepository.findOne({
       where: {
-        account: account,
-        currency: currency,
+        accountId: accountId,
+        unit: unit,
       },
       relations: relations,
     });
 
     if (!balance) {
       balance = this.balanceRepository.create({
-        account: account,
-        currency: currency,
+        accountId: accountId,
+        unit: unit,
         amount: new Decimal(0),
       });
 
@@ -50,15 +49,7 @@ export class BalanceService {
     return balance;
   }
 
-  async save(
-    account: Account,
-    currency: Currency,
-    amount: Decimal,
-  ): Promise<void> {
-    await this.balanceRepository.save({
-      account: account,
-      currency: currency,
-      amount: amount,
-    });
+  async save(balance: Balance): Promise<void> {
+    await this.balanceRepository.save(balance);
   }
 }
