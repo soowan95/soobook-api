@@ -88,7 +88,7 @@ export class TaskService {
     this.logger.log(
       `🎯 Total: ${totalCnt}\n✅ Success: ${successCnt}\n⛔️ Fail: ${failCnt}`,
     );
-    this.logger.log('🏁 Daily transaction creation ended');
+    this.logger.log('🏁 Daily transaction creation end');
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_NOON)
@@ -130,13 +130,14 @@ export class TaskService {
     this.logger.log(
       `🎯 Total: ${totalCnt}\n✅ Success: ${successCnt}\n⛔️ Fail: ${failCnt}`,
     );
-    this.logger.log('🏁 Send notification ended');
+    this.logger.log('🏁 Send notification end');
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_NOON)
+  @Cron('0 30 11 * * *')
   async fetchCurrency(): Promise<void> {
+    await new Promise((r) => setTimeout(r, 3000));
     this.logger.log('📝 Fetching currency start');
     await this.currencyService.fetch();
-    this.logger.log('🏁 Fetching currency start');
+    this.logger.log('🏁 Fetching currency end');
   }
 }
