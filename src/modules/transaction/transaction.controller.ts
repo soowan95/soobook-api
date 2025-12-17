@@ -35,7 +35,7 @@ export class TransactionController {
   @ApiOperation({
     summary: '[Transaction] 일일 조회',
   })
-  @ApiQuery({ name: 'createdAt', required: false })
+  @ApiQuery({ name: 'commitAt', required: false })
   @ApiQuery({ name: 'accountId', required: false })
   @ApiOkResponse({ type: TransactionBaseResponseDto, isArray: true })
   @ApiBearerAuth()
@@ -43,12 +43,12 @@ export class TransactionController {
   @Get('show/daily')
   async showDaily(
     @Req() req: AuthRequest,
-    @Query('createdAt') createdAt: string | undefined,
+    @Query('commitAt') commitAt: string | undefined,
     @Query('accountId') accountId: number | undefined,
   ): Promise<TransactionBaseResponseDto[]> {
     const transactions: Transaction[] = await this.transactionService.showDaily(
       req.user.id,
-      createdAt,
+      commitAt,
       accountId,
     );
 
@@ -58,7 +58,7 @@ export class TransactionController {
   @ApiOperation({
     summary: '[Transaction] 월별 조회',
   })
-  @ApiQuery({ name: 'createdAt', required: false })
+  @ApiQuery({ name: 'commitAt', required: false })
   @ApiQuery({ name: 'accountId', required: false })
   @ApiOkResponse({ type: TransactionBaseResponseDto, isArray: true })
   @ApiBearerAuth()
@@ -66,13 +66,13 @@ export class TransactionController {
   @Get('show/monthly')
   async showMonthly(
     @Req() req: AuthRequest,
-    @Query('createdAt') createdAt: string | undefined,
+    @Query('commitAt') commitAt: string | undefined,
     @Query('accountId') accountId: number | undefined,
   ): Promise<TransactionBaseResponseDto[]> {
     const transactions: Transaction[] =
       await this.transactionService.showMonthly(
         req.user.id,
-        createdAt,
+        commitAt,
         accountId,
       );
 

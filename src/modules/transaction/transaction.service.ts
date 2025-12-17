@@ -49,15 +49,15 @@ export class TransactionService {
 
   async showDaily(
     userId: number,
-    createdAt: string | undefined,
+    commitAt: string | undefined,
     accountId: number | undefined,
   ): Promise<Transaction[]> {
-    const today: Date = createdAt
-      ? parse(createdAt, 'yyyyMMdd', new Date())
+    const today: Date = commitAt
+      ? parse(commitAt, 'yyyyMMdd', new Date())
       : new Date();
     const where: any = {
       user: { id: userId },
-      createdAt: Between(startOfDay(today), endOfDay(today)),
+      commitAt: Between(startOfDay(today), endOfDay(today)),
     };
     if (accountId) {
       where['account'] = { id: accountId };
@@ -70,15 +70,15 @@ export class TransactionService {
 
   async showMonthly(
     userId: number,
-    createdAt: string | undefined,
+    commitAt: string | undefined,
     accountId: number | undefined,
   ): Promise<Transaction[]> {
-    const today: Date = createdAt
-      ? parse(createdAt, 'yyyyMMdd', new Date())
+    const today: Date = commitAt
+      ? parse(commitAt, 'yyyyMMdd', new Date())
       : new Date();
     const where: any = {
       user: { id: userId },
-      createdAt: Between(startOfMonth(today), endOfMonth(today)),
+      commitAt: Between(startOfMonth(today), endOfMonth(today)),
     };
     if (accountId) {
       where['account'] = { id: accountId };
@@ -95,7 +95,7 @@ export class TransactionService {
   ): Promise<TransactionMonthlyBriefResponseDto> {
     const where: any = {
       user: { id: userId },
-      createdAt: Between(startOfMonth(new Date()), endOfMonth(new Date())),
+      commitAt: Between(startOfMonth(new Date()), endOfMonth(new Date())),
     };
     if (accountId) {
       where['account'] = { id: accountId };
@@ -129,7 +129,7 @@ export class TransactionService {
       where: where,
       relations: ['account', 'toAccount', 'category', 'recurrence', 'currency'],
       order: {
-        id: 'DESC',
+        commitAt: 'DESC',
       },
     });
   }
@@ -220,9 +220,7 @@ export class TransactionService {
           request.type ?? transaction.type,
           request.accountId ?? transaction.account.id,
           request.toAccountId,
-          request.amount
-            ? request.amount
-            : transaction.amount,
+          request.amount ? request.amount : transaction.amount,
           currency.unit,
         );
         account = await this.accountService.findByIdOrThrow(request.accountId);
