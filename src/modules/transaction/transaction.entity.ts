@@ -62,4 +62,7 @@ export class Transaction extends Soobook {
 
   @Column({ nullable: true })
   location: string;
+
+  @Column("datetime", { name: 'commit_at', nullable: false, default: () => "CURRENT_TIMESTAMP" })
+  commitAt: Date;
 }

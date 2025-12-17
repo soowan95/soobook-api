@@ -1,4 +1,4 @@
-import { Exclude, Expose, Transform } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { SoobookDto } from '../../../../common/interfaces/soobook.dto';
 import { Account } from '../../../account/account.entity';
@@ -63,6 +63,13 @@ export class TransactionBaseResponseDto extends SoobookDto {
   @Expose()
   @Transform(({ obj }) => obj.currency?.unit, { toClassOnly: true })
   unit: string;
+
+  @ApiProperty({
+    description: '거리 일시',
+  })
+  @Expose()
+  @Type(() => Date)
+  commitAt: Date;
 
   @Exclude()
   account: Account;

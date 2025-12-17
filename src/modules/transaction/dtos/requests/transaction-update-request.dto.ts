@@ -4,6 +4,8 @@ import { TransactionType } from '../../transaction-type.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptionalNumber } from '../../../../common/decorators/is-optional-number.decorator';
 import { IsOptionalString } from '../../../../common/decorators/is-optional-string.decorator';
+import { Type } from 'class-transformer';
+import { IsOptionalDate } from '../../../../common/decorators/is-optional-date.decorator';
 
 export class TransactionUpdateRequestDto extends SoobookDto {
   @ApiProperty({
@@ -68,4 +70,12 @@ export class TransactionUpdateRequestDto extends SoobookDto {
   })
   @IsOptionalString()
   unit?: string;
+
+  @ApiProperty({
+    description: '거래 일자',
+    example: '2025-12-01 12:30',
+  })
+  @Type(() => Date)
+  @IsOptionalDate()
+  commitAt?: Date;
 }
