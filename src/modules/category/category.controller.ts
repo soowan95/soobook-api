@@ -59,7 +59,9 @@ export class CategoryController {
   async retrieve(): Promise<CategoryBaseResponseDto[]> {
     const categories: Category[] = await this.categoryService.findAll();
 
-    return plainToInstance(CategoryBaseResponseDto, categories);
+    return plainToInstance(CategoryBaseResponseDto, categories, {
+      exposeUnsetFields: false,
+    });
   }
 
   @ApiOperation({
