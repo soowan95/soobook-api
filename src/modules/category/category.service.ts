@@ -24,7 +24,9 @@ export class CategoryService {
   }
 
   async findAll(): Promise<Category[]> {
-    return await this.categoryRepository.find({ relations: ['parent'] });
+    return await this.categoryRepository.manager
+      .getTreeRepository(Category)
+      .findTrees();
   }
 
   async findByIdOrThrow(id: number): Promise<Category> {
